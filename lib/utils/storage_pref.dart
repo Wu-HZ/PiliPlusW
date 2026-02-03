@@ -958,4 +958,7 @@ abstract final class Pref {
 
   static double get touchSlopH =>
       _setting.get(SettingBoxKey.touchSlopH, defaultValue: 24.0);
+
+  static int get floatingWindowMaxCount =>
+      _setting.get(SettingBoxKey.floatingWindowMaxCount, defaultValue: 3);
 }

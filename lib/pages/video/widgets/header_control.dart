@@ -1891,11 +1891,41 @@ class HeaderControlState extends State<HeaderControl>
                       size: 15,
                       color: Colors.white,
                     ),
-                    onPressed: () {
-                      videoDetailCtr.plPlayerController
-                        ..isCloseAll = true
-                        ..dispose();
-                      Get.until((route) => route.isFirst);
+                    onPressed: () async {
+                      // Exit fullscreen first if needed
+                      if (isFullScreen) {
+                        await plPlayerController.triggerFullScreen(status: false);
+                      }
+
+                      // Try to create a floating window
+                      final success = plPlayerController.triggerFloatingWindow(
+                        heroTag: heroTag,
+                        onTap: () {
+                          // Navigate back to the video detail page
+                          PageUtils.toVideoPage(
+                            bvid: videoDetailCtr.bvid,
+                            cid: videoDetailCtr.cid.value,
+                            cover: videoDetailCtr.cover.value,
+                          );
+                        },
+                        aid: videoDetailCtr.aid,
+                        epId: videoDetailCtr.epId,
+                        seasonId: videoDetailCtr.seasonId,
+                        coverUrl: videoDetailCtr.cover.value,
+                      );
+
+                      if (success) {
+                        // Small delay to allow overlay to mount before navigation
+                        await Future.delayed(const Duration(milliseconds: 50));
+                        // Navigate to home
+                        Get.until((route) => route.isFirst);
+                      } else {
+                        // Fallback to original behavior if floating window creation fails
+                        videoDetailCtr.plPlayerController
+                          ..isCloseAll = true
+                          ..dispose();
+                        Get.until((route) => route.isFirst);
+                      }
                     },
                   ),
                 ),

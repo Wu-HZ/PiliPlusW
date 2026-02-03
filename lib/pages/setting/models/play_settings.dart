@@ -210,6 +210,17 @@ List<SettingsModel> get playSettings => [
       defaultVal: false,
     ),
   ],
+  getVideoFilterSelectModel(
+    title: '悬浮窗最大数量',
+    subtitle: '点击返回主页时创建悬浮窗，同时最多存在几个悬浮窗',
+    key: SettingBoxKey.floatingWindowMaxCount,
+    values: [1, 2, 3, 4, 5],
+    defaultValue: 3,
+    isFilter: false,
+    onChanged: (value) {
+      floatingWindowManager.maxWindows = value;
+    },
+  ),
   const SwitchModel(
     title: '全屏手势反向',
     subtitle: '默认播放器中部向上滑动进入全屏，向下退出\n开启后向下全屏，向上退出',

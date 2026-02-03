@@ -43,6 +43,7 @@ import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliPlus/widgets/floating_video_window.dart';
 import 'package:archive/archive.dart' show getCrc32;
 import 'package:canvas_danmaku/canvas_danmaku.dart';
 import 'package:dio/dio.dart' show Options;
@@ -203,6 +204,20 @@ class PlPlayerController {
   VideoController? get videoController => _videoController;
 
   bool isMuted = false;
+
+  /// Set mute state for audio focus management in floating windows
+  Future<void> setMute(bool muted) async {
+    isMuted = muted;
+    if (_videoPlayerController != null) {
+      if (muted) {
+        await _videoPlayerController!.setVolume(0.0);
+      } else {
+        await _videoPlayerController!.setVolume(
+          PlatformUtils.isDesktop ? volume.value * 100 : 100.0,
+        );
+      }
+    }
+  }
 
   /// 听视频
   late final RxBool onlyPlayAudio = false.obs;
@@ -1687,6 +1702,118 @@ class PlPlayerController {
       SettingBoxKey.subtitleStrokeWidth: subtitleStrokeWidth,
       SettingBoxKey.subtitleFontWeight: subtitleFontWeight,
     });
+  }
+
+  /// Triggers a floating window for the current video
+  /// Returns true if successful, false otherwise
+  bool triggerFloatingWindow({
+    required String heroTag,
+    required VoidCallback onTap,
+    int? aid,
+    int? epId,
+    int? seasonId,
+    String? title,
+    String? coverUrl,
+  }) {
+    if (videoController == null) {
+      return false;
+    }
+
+    final context = Get.context;
+    if (context == null) {
+      return false;
+    }
+
+    // Check if we can create a new window
+    if (!floatingWindowManager.canCreateWindow) {
+      floatingWindowManager.closeOldestWindow();
+    }
+
+    // Calculate dimensions based on video aspect ratio
+    final size = FloatingVideoWindow.calculateDimensions(this);
+
+    // Generate unique window ID
+    final windowId = floatingWindowManager.generateWindowId();
+
+    // Calculate staggered position for multiple windows
+    final topPosition = floatingWindowManager.getStaggeredTopPosition();
+    final screenSize = MediaQuery.sizeOf(context);
+    final initialPosition = Offset(
+      screenSize.width - size.width - 20,
+      topPosition,
+    );
+
+    // Get the root overlay to ensure persistence across route changes
+    final overlayState = Overlay.of(context, rootOverlay: true);
+
+    // Create overlay entry
+    late OverlayEntry overlayEntry;
+    overlayEntry = OverlayEntry(
+      builder: (context) => FloatingVideoWindow(
+        windowId: windowId,
+        playerController: this,
+        floatingWidth: size.width,
+        floatingHeight: size.height,
+        isLive: isLive,
+        initialPosition: initialPosition,
+        onTap: () {
+          // Give audio focus when tapped
+          floatingWindowManager.onWindowTapped(windowId);
+          // Call the provided onTap callback to navigate to video detail
+          onTap();
+        },
+        onClose: () {
+          floatingWindowManager.closeWindowAndDispose(windowId);
+        },
+        onPositionChanged: (position) {
+          floatingWindowManager.updateWindowPosition(windowId, position);
+        },
+      ),
+    );
+
+    // Create state and register with FloatingWindowManager
+    final windowState = FloatingWindowState(
+      windowId: windowId,
+      bvid: _bvid ?? '',
+      cid: cid ?? 0,
+      heroTag: heroTag,
+      playerController: this,
+      overlayEntry: overlayEntry,
+      videoType: _videoType,
+      savedPosition: position.value,
+      position: initialPosition,
+      size: size,
+      title: title,
+      coverUrl: coverUrl,
+      aid: aid ?? _aid,
+      epId: epId ?? _epid,
+      seasonId: seasonId ?? _seasonId,
+    );
+
+    floatingWindowManager.createWindow(windowState);
+
+    // Detach this player from the singleton so the next video gets a fresh player instance
+    if (_instance == this) {
+      _instance = null;
+    }
+
+    // Insert the overlay entry into the root overlay
+    overlayState.insert(overlayEntry);
+
+    // Ensure player continues playing after a short delay
+    // (to allow overlay to be properly mounted)
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (playerStatus.value != PlayerStatus.playing) {
+        play();
+      }
+    });
+
+    return true;
+  }
+
+  /// Restore this controller as the singleton instance (used when returning from floating window)
+  static void restoreInstance(PlPlayerController controller) {
+    _instance = controller;
   }
 
   bool isCloseAll = false;

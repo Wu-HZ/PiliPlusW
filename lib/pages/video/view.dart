@@ -352,7 +352,11 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       AutoOrientation.portraitUpMode();
     }
     shutdownTimerService.handleWaitingFinished();
-    if (!videoDetailController.plPlayerController.isCloseAll) {
+    // Skip player disposal if video is in a floating window
+    final hasFloatingWindow =
+        floatingWindowManager.hasWindowForVideo(videoDetailController.bvid);
+    if (!videoDetailController.plPlayerController.isCloseAll &&
+        !hasFloatingWindow) {
       videoPlayerServiceHandler?.onVideoDetailDispose(heroTag);
       if (plPlayerController != null) {
         videoDetailController.makeHeartBeat();
