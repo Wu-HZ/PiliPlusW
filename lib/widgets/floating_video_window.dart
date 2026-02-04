@@ -1,5 +1,5 @@
-import 'package:PiliPlus/plugin/pl_player/controller.dart';
-import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
+import 'package:PiliMinus/plugin/pl_player/controller.dart';
+import 'package:PiliMinus/plugin/pl_player/models/play_status.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';

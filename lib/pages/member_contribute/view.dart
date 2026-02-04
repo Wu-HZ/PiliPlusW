@@ -1,14 +1,14 @@
-import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
-import 'package:PiliPlus/models/common/member/contribute_type.dart';
-import 'package:PiliPlus/models_new/space/space/tab2.dart';
-import 'package:PiliPlus/pages/member_article/view.dart';
-import 'package:PiliPlus/pages/member_audio/view.dart';
-import 'package:PiliPlus/pages/member_comic/view.dart';
-import 'package:PiliPlus/pages/member_contribute/controller.dart';
-import 'package:PiliPlus/pages/member_opus/view.dart';
-import 'package:PiliPlus/pages/member_season_series/view.dart';
-import 'package:PiliPlus/pages/member_video/view.dart';
-import 'package:PiliPlus/utils/extension/get_ext.dart';
+import 'package:PiliMinus/common/widgets/loading_widget/loading_widget.dart';
+import 'package:PiliMinus/models/common/member/contribute_type.dart';
+import 'package:PiliMinus/models_new/space/space/tab2.dart';
+import 'package:PiliMinus/pages/member_article/view.dart';
+import 'package:PiliMinus/pages/member_audio/view.dart';
+import 'package:PiliMinus/pages/member_comic/view.dart';
+import 'package:PiliMinus/pages/member_contribute/controller.dart';
+import 'package:PiliMinus/pages/member_opus/view.dart';
+import 'package:PiliMinus/pages/member_season_series/view.dart';
+import 'package:PiliMinus/pages/member_video/view.dart';
+import 'package:PiliMinus/utils/extension/get_ext.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

@@ -1,5 +1,5 @@
-import 'package:PiliPlus/models_new/pgc/pgc_index_result/badge_info.dart';
-import 'package:PiliPlus/models_new/pgc/pgc_index_result/first_ep.dart';
+import 'package:PiliMinus/models_new/pgc/pgc_index_result/badge_info.dart';
+import 'package:PiliMinus/models_new/pgc/pgc_index_result/first_ep.dart';
 
 class PgcIndexItem {
   String? badge;

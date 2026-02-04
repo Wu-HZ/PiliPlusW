@@ -1,6 +1,6 @@
-import 'package:PiliPlus/common/widgets/pair.dart';
-import 'package:PiliPlus/models/common/sponsor_block/action_type.dart';
-import 'package:PiliPlus/models/common/sponsor_block/segment_type.dart';
+import 'package:PiliMinus/common/widgets/pair.dart';
+import 'package:PiliMinus/models/common/sponsor_block/action_type.dart';
+import 'package:PiliMinus/models/common/sponsor_block/segment_type.dart';
 
 class PostSegmentModel {
   PostSegmentModel({

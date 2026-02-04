@@ -1,18 +1,18 @@
-import 'package:PiliPlus/models_new/fav/fav_pgc/area.dart';
-import 'package:PiliPlus/models_new/fav/fav_pgc/badge_info.dart';
-import 'package:PiliPlus/models_new/fav/fav_pgc/badge_infos.dart';
-import 'package:PiliPlus/models_new/fav/fav_pgc/config_attrs.dart';
-import 'package:PiliPlus/models_new/fav/fav_pgc/first_ep_info.dart';
-import 'package:PiliPlus/models_new/fav/fav_pgc/new_ep.dart';
-import 'package:PiliPlus/models_new/fav/fav_pgc/producer.dart';
-import 'package:PiliPlus/models_new/fav/fav_pgc/publish.dart';
-import 'package:PiliPlus/models_new/fav/fav_pgc/rating.dart';
-import 'package:PiliPlus/models_new/fav/fav_pgc/rights.dart';
-import 'package:PiliPlus/models_new/fav/fav_pgc/section.dart';
-import 'package:PiliPlus/models_new/fav/fav_pgc/series.dart';
-import 'package:PiliPlus/models_new/fav/fav_pgc/stat.dart';
-import 'package:PiliPlus/pages/common/multi_select/base.dart';
-import 'package:PiliPlus/utils/extension/iterable_ext.dart';
+import 'package:PiliMinus/models_new/fav/fav_pgc/area.dart';
+import 'package:PiliMinus/models_new/fav/fav_pgc/badge_info.dart';
+import 'package:PiliMinus/models_new/fav/fav_pgc/badge_infos.dart';
+import 'package:PiliMinus/models_new/fav/fav_pgc/config_attrs.dart';
+import 'package:PiliMinus/models_new/fav/fav_pgc/first_ep_info.dart';
+import 'package:PiliMinus/models_new/fav/fav_pgc/new_ep.dart';
+import 'package:PiliMinus/models_new/fav/fav_pgc/producer.dart';
+import 'package:PiliMinus/models_new/fav/fav_pgc/publish.dart';
+import 'package:PiliMinus/models_new/fav/fav_pgc/rating.dart';
+import 'package:PiliMinus/models_new/fav/fav_pgc/rights.dart';
+import 'package:PiliMinus/models_new/fav/fav_pgc/section.dart';
+import 'package:PiliMinus/models_new/fav/fav_pgc/series.dart';
+import 'package:PiliMinus/models_new/fav/fav_pgc/stat.dart';
+import 'package:PiliMinus/pages/common/multi_select/base.dart';
+import 'package:PiliMinus/utils/extension/iterable_ext.dart';
 
 class FavPgcItemModel with MultiSelectData {
   int? seasonId;

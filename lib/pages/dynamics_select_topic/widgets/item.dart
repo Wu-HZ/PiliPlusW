@@ -1,6 +1,6 @@
-import 'package:PiliPlus/common/widgets/custom_icon.dart';
-import 'package:PiliPlus/models_new/dynamic/dyn_topic_top/topic_item.dart';
-import 'package:PiliPlus/utils/num_utils.dart';
+import 'package:PiliMinus/common/widgets/custom_icon.dart';
+import 'package:PiliMinus/models_new/dynamic/dyn_topic_top/topic_item.dart';
+import 'package:PiliMinus/utils/num_utils.dart';
 import 'package:flutter/material.dart';
 
 class DynTopicItem extends StatelessWidget {

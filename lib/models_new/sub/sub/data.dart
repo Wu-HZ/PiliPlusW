@@ -1,4 +1,4 @@
-import 'package:PiliPlus/models_new/sub/sub/list.dart';
+import 'package:PiliMinus/models_new/sub/sub/list.dart';
 
 class SubData {
   int? count;

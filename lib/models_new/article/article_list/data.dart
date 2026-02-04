@@ -1,7 +1,7 @@
-import 'package:PiliPlus/models/model_owner.dart';
-import 'package:PiliPlus/models_new/article/article_list/article.dart';
-import 'package:PiliPlus/models_new/article/article_list/last.dart';
-import 'package:PiliPlus/models_new/article/article_list/list.dart';
+import 'package:PiliMinus/models/model_owner.dart';
+import 'package:PiliMinus/models_new/article/article_list/article.dart';
+import 'package:PiliMinus/models_new/article/article_list/last.dart';
+import 'package:PiliMinus/models_new/article/article_list/list.dart';
 
 class ArticleListData {
   ArticleListInfo? list;

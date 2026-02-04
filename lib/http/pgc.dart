@@ -1,14 +1,14 @@
-import 'package:PiliPlus/http/api.dart';
-import 'package:PiliPlus/http/init.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models/common/pgc_review_type.dart';
-import 'package:PiliPlus/models_new/pgc/pgc_index_condition/data.dart';
-import 'package:PiliPlus/models_new/pgc/pgc_index_result/data.dart';
-import 'package:PiliPlus/models_new/pgc/pgc_index_result/list.dart';
-import 'package:PiliPlus/models_new/pgc/pgc_review/data.dart';
-import 'package:PiliPlus/models_new/pgc/pgc_timeline/pgc_timeline.dart';
-import 'package:PiliPlus/models_new/pgc/pgc_timeline/result.dart';
-import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliMinus/http/api.dart';
+import 'package:PiliMinus/http/init.dart';
+import 'package:PiliMinus/http/loading_state.dart';
+import 'package:PiliMinus/models/common/pgc_review_type.dart';
+import 'package:PiliMinus/models_new/pgc/pgc_index_condition/data.dart';
+import 'package:PiliMinus/models_new/pgc/pgc_index_result/data.dart';
+import 'package:PiliMinus/models_new/pgc/pgc_index_result/list.dart';
+import 'package:PiliMinus/models_new/pgc/pgc_review/data.dart';
+import 'package:PiliMinus/models_new/pgc/pgc_timeline/pgc_timeline.dart';
+import 'package:PiliMinus/models_new/pgc/pgc_timeline/result.dart';
+import 'package:PiliMinus/utils/accounts.dart';
 import 'package:dio/dio.dart';
 
 abstract final class PgcHttp {

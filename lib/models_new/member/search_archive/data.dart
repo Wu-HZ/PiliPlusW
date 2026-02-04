@@ -1,6 +1,6 @@
-import 'package:PiliPlus/models_new/member/search_archive/episodic_button.dart';
-import 'package:PiliPlus/models_new/member/search_archive/list.dart';
-import 'package:PiliPlus/models_new/member/search_archive/page.dart';
+import 'package:PiliMinus/models_new/member/search_archive/episodic_button.dart';
+import 'package:PiliMinus/models_new/member/search_archive/list.dart';
+import 'package:PiliMinus/models_new/member/search_archive/page.dart';
 
 class SearchArchiveData {
   SearchArchiveList? list;

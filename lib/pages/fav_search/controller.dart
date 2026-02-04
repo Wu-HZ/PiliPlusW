@@ -1,13 +1,13 @@
-import 'package:PiliPlus/http/fav.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models/common/fav_order_type.dart';
-import 'package:PiliPlus/models/common/video/source_type.dart';
-import 'package:PiliPlus/models_new/fav/fav_detail/data.dart';
-import 'package:PiliPlus/models_new/fav/fav_detail/media.dart';
-import 'package:PiliPlus/pages/common/multi_select/base.dart';
-import 'package:PiliPlus/pages/common/search/common_search_controller.dart';
-import 'package:PiliPlus/pages/fav_detail/controller.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliMinus/http/fav.dart';
+import 'package:PiliMinus/http/loading_state.dart';
+import 'package:PiliMinus/models/common/fav_order_type.dart';
+import 'package:PiliMinus/models/common/video/source_type.dart';
+import 'package:PiliMinus/models_new/fav/fav_detail/data.dart';
+import 'package:PiliMinus/models_new/fav/fav_detail/media.dart';
+import 'package:PiliMinus/pages/common/multi_select/base.dart';
+import 'package:PiliMinus/pages/common/search/common_search_controller.dart';
+import 'package:PiliMinus/pages/fav_detail/controller.dart';
+import 'package:PiliMinus/utils/page_utils.dart';
 import 'package:get/get.dart';
 
 class FavSearchController

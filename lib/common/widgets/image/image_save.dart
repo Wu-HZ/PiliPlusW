@@ -1,9 +1,9 @@
-import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/common/widgets/button/icon_button.dart';
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/http/user.dart';
-import 'package:PiliPlus/utils/image_utils.dart';
-import 'package:PiliPlus/utils/platform_utils.dart';
+import 'package:PiliMinus/common/constants.dart';
+import 'package:PiliMinus/common/widgets/button/icon_button.dart';
+import 'package:PiliMinus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliMinus/http/user.dart';
+import 'package:PiliMinus/utils/image_utils.dart';
+import 'package:PiliMinus/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';

@@ -1,4 +1,4 @@
-import 'package:PiliPlus/models_new/fav/fav_pgc/multi_img.dart';
+import 'package:PiliMinus/models_new/fav/fav_pgc/multi_img.dart';
 
 class BadgeInfo {
   String? text;

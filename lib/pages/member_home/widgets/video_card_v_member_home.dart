@@ -1,15 +1,15 @@
-import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/common/widgets/badge.dart';
-import 'package:PiliPlus/common/widgets/image/image_save.dart';
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/http/search.dart';
-import 'package:PiliPlus/models/common/badge_type.dart';
-import 'package:PiliPlus/models_new/space/space_archive/item.dart';
-import 'package:PiliPlus/utils/app_scheme.dart';
-import 'package:PiliPlus/utils/duration_utils.dart';
-import 'package:PiliPlus/utils/id_utils.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/platform_utils.dart';
+import 'package:PiliMinus/common/constants.dart';
+import 'package:PiliMinus/common/widgets/badge.dart';
+import 'package:PiliMinus/common/widgets/image/image_save.dart';
+import 'package:PiliMinus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliMinus/http/search.dart';
+import 'package:PiliMinus/models/common/badge_type.dart';
+import 'package:PiliMinus/models_new/space/space_archive/item.dart';
+import 'package:PiliMinus/utils/app_scheme.dart';
+import 'package:PiliMinus/utils/duration_utils.dart';
+import 'package:PiliMinus/utils/id_utils.dart';
+import 'package:PiliMinus/utils/page_utils.dart';
+import 'package:PiliMinus/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
 
 // 视频卡片 - 垂直布局

@@ -1,5 +1,5 @@
-import 'package:PiliPlus/models/common/video/video_type.dart';
-import 'package:PiliPlus/plugin/pl_player/controller.dart';
+import 'package:PiliMinus/models/common/video/video_type.dart';
+import 'package:PiliMinus/plugin/pl_player/controller.dart';
 import 'package:flutter/material.dart';
 
 /// State for a single floating window

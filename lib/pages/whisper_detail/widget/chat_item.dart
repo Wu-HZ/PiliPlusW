@@ -1,24 +1,24 @@
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/common/widgets/badge.dart';
-import 'package:PiliPlus/common/widgets/gesture/tap_gesture_recognizer.dart';
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/grpc/bilibili/im/interfaces/v1.pb.dart'
+import 'package:PiliMinus/common/constants.dart';
+import 'package:PiliMinus/common/widgets/badge.dart';
+import 'package:PiliMinus/common/widgets/gesture/tap_gesture_recognizer.dart';
+import 'package:PiliMinus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliMinus/grpc/bilibili/im/interfaces/v1.pb.dart'
     show EmotionInfo;
-import 'package:PiliPlus/grpc/bilibili/im/type.pb.dart' show Msg, MsgType;
-import 'package:PiliPlus/http/search.dart';
-import 'package:PiliPlus/models/common/badge_type.dart';
-import 'package:PiliPlus/models/common/image_preview_type.dart';
-import 'package:PiliPlus/models/common/image_type.dart';
-import 'package:PiliPlus/utils/app_scheme.dart';
-import 'package:PiliPlus/utils/date_utils.dart';
-import 'package:PiliPlus/utils/duration_utils.dart';
-import 'package:PiliPlus/utils/extension/num_ext.dart';
-import 'package:PiliPlus/utils/id_utils.dart';
-import 'package:PiliPlus/utils/image_utils.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliMinus/grpc/bilibili/im/type.pb.dart' show Msg, MsgType;
+import 'package:PiliMinus/http/search.dart';
+import 'package:PiliMinus/models/common/badge_type.dart';
+import 'package:PiliMinus/models/common/image_preview_type.dart';
+import 'package:PiliMinus/models/common/image_type.dart';
+import 'package:PiliMinus/utils/app_scheme.dart';
+import 'package:PiliMinus/utils/date_utils.dart';
+import 'package:PiliMinus/utils/duration_utils.dart';
+import 'package:PiliMinus/utils/extension/num_ext.dart';
+import 'package:PiliMinus/utils/id_utils.dart';
+import 'package:PiliMinus/utils/image_utils.dart';
+import 'package:PiliMinus/utils/page_utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';

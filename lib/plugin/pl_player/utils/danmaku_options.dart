@@ -1,7 +1,7 @@
-import 'package:PiliPlus/utils/extension/box_ext.dart';
-import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/storage_key.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliMinus/utils/extension/box_ext.dart';
+import 'package:PiliMinus/utils/storage.dart';
+import 'package:PiliMinus/utils/storage_key.dart';
+import 'package:PiliMinus/utils/storage_pref.dart';
 import 'package:canvas_danmaku/canvas_danmaku.dart';
 
 abstract final class DanmakuOptions {

@@ -1,5 +1,5 @@
-import 'package:PiliPlus/models/model_avatar.dart';
-import 'package:PiliPlus/models_new/live/live_feed_index/watched_show.dart';
+import 'package:PiliMinus/models/model_avatar.dart';
+import 'package:PiliMinus/models_new/live/live_feed_index/watched_show.dart';
 
 class MemberInfoModel {
   MemberInfoModel({

@@ -1,5 +1,5 @@
-import 'package:PiliPlus/models_new/msg/msg_reply/content.dart';
-import 'package:PiliPlus/models_new/msg/msg_reply/user.dart';
+import 'package:PiliMinus/models_new/msg/msg_reply/content.dart';
+import 'package:PiliMinus/models_new/msg/msg_reply/user.dart';
 
 class MsgReplyItem {
   int? id;

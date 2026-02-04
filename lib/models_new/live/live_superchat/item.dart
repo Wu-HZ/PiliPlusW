@@ -1,5 +1,5 @@
-import 'package:PiliPlus/models_new/live/live_superchat/user_info.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliMinus/models_new/live/live_superchat/user_info.dart';
+import 'package:PiliMinus/utils/utils.dart';
 
 class SuperChatItem {
   int id;

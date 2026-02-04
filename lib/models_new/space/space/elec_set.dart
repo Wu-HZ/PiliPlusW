@@ -1,4 +1,4 @@
-import 'package:PiliPlus/models_new/space/space/elec_list.dart';
+import 'package:PiliMinus/models_new/space/space/elec_list.dart';
 
 class ElecSet {
   int? elecTheme;

@@ -1,16 +1,16 @@
 import 'dart:convert';
 
-import 'package:PiliPlus/build_config.dart';
-import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/http/init.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/http/sponsor_block_api.dart';
-import 'package:PiliPlus/models/common/sponsor_block/post_segment_model.dart';
-import 'package:PiliPlus/models/common/sponsor_block/segment_type.dart';
-import 'package:PiliPlus/models_new/sponsor_block/segment_item.dart';
-import 'package:PiliPlus/models_new/sponsor_block/user_info.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliMinus/build_config.dart';
+import 'package:PiliMinus/common/constants.dart';
+import 'package:PiliMinus/http/init.dart';
+import 'package:PiliMinus/http/loading_state.dart';
+import 'package:PiliMinus/http/sponsor_block_api.dart';
+import 'package:PiliMinus/models/common/sponsor_block/post_segment_model.dart';
+import 'package:PiliMinus/models/common/sponsor_block/segment_type.dart';
+import 'package:PiliMinus/models_new/sponsor_block/segment_item.dart';
+import 'package:PiliMinus/models_new/sponsor_block/user_info.dart';
+import 'package:PiliMinus/utils/storage_pref.dart';
+import 'package:PiliMinus/utils/utils.dart';
 import 'package:dio/dio.dart';
 
 /// https://github.com/hanydd/BilibiliSponsorBlock/wiki/API

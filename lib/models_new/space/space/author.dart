@@ -1,6 +1,6 @@
-import 'package:PiliPlus/models/model_avatar.dart';
-import 'package:PiliPlus/models_new/space/space/nameplate.dart';
-import 'package:PiliPlus/models_new/space/space/official_verify.dart';
+import 'package:PiliMinus/models/model_avatar.dart';
+import 'package:PiliMinus/models_new/space/space/nameplate.dart';
+import 'package:PiliMinus/models_new/space/space/official_verify.dart';
 
 class Author {
   int? mid;

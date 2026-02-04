@@ -1,20 +1,20 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:PiliPlus/common/widgets/avatars.dart';
-import 'package:PiliPlus/common/widgets/badge.dart';
-import 'package:PiliPlus/common/widgets/dialog/report.dart';
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/http/dynamics.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models/common/badge_type.dart';
-import 'package:PiliPlus/models/dynamics/vote_model.dart';
-import 'package:PiliPlus/models_new/followee_votes/vote.dart';
-import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/date_utils.dart';
-import 'package:PiliPlus/utils/extension/iterable_ext.dart';
-import 'package:PiliPlus/utils/grid.dart';
-import 'package:PiliPlus/utils/num_utils.dart';
+import 'package:PiliMinus/common/widgets/avatars.dart';
+import 'package:PiliMinus/common/widgets/badge.dart';
+import 'package:PiliMinus/common/widgets/dialog/report.dart';
+import 'package:PiliMinus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliMinus/http/dynamics.dart';
+import 'package:PiliMinus/http/loading_state.dart';
+import 'package:PiliMinus/models/common/badge_type.dart';
+import 'package:PiliMinus/models/dynamics/vote_model.dart';
+import 'package:PiliMinus/models_new/followee_votes/vote.dart';
+import 'package:PiliMinus/utils/accounts.dart';
+import 'package:PiliMinus/utils/date_utils.dart';
+import 'package:PiliMinus/utils/extension/iterable_ext.dart';
+import 'package:PiliMinus/utils/grid.dart';
+import 'package:PiliMinus/utils/num_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

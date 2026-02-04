@@ -1,14 +1,14 @@
 import 'dart:math';
 
-import 'package:PiliPlus/common/widgets/custom_tooltip.dart';
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
-import 'package:PiliPlus/common/widgets/scroll_physics.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models/common/image_type.dart';
-import 'package:PiliPlus/models_new/live/live_emote/datum.dart';
-import 'package:PiliPlus/models_new/live/live_emote/emoticon.dart';
-import 'package:PiliPlus/pages/live_emote/controller.dart';
+import 'package:PiliMinus/common/widgets/custom_tooltip.dart';
+import 'package:PiliMinus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliMinus/common/widgets/loading_widget/loading_widget.dart';
+import 'package:PiliMinus/common/widgets/scroll_physics.dart';
+import 'package:PiliMinus/http/loading_state.dart';
+import 'package:PiliMinus/models/common/image_type.dart';
+import 'package:PiliMinus/models_new/live/live_emote/datum.dart';
+import 'package:PiliMinus/models_new/live/live_emote/emoticon.dart';
+import 'package:PiliMinus/pages/live_emote/controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

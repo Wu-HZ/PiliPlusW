@@ -1,9 +1,9 @@
-import 'package:PiliPlus/services/audio_handler.dart';
-import 'package:PiliPlus/services/audio_session.dart';
-import 'package:PiliPlus/services/floating_window_manager.dart';
+import 'package:PiliMinus/services/audio_handler.dart';
+import 'package:PiliMinus/services/audio_session.dart';
+import 'package:PiliMinus/services/floating_window_manager.dart';
 
 // Re-export floating window manager for easy access
-export 'package:PiliPlus/services/floating_window_manager.dart';
+export 'package:PiliMinus/services/floating_window_manager.dart';
 
 VideoPlayerServiceHandler? videoPlayerServiceHandler;
 AudioSessionHandler? audioSessionHandler;

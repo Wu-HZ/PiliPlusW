@@ -1,10 +1,10 @@
-import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/http/member.dart';
-import 'package:PiliPlus/models/member/tags.dart';
-import 'package:PiliPlus/utils/extension/iterable_ext.dart';
-import 'package:PiliPlus/utils/extension/num_ext.dart';
-import 'package:PiliPlus/utils/feed_back.dart';
+import 'package:PiliMinus/common/widgets/loading_widget/loading_widget.dart';
+import 'package:PiliMinus/http/loading_state.dart';
+import 'package:PiliMinus/http/member.dart';
+import 'package:PiliMinus/models/member/tags.dart';
+import 'package:PiliMinus/utils/extension/iterable_ext.dart';
+import 'package:PiliMinus/utils/extension/num_ext.dart';
+import 'package:PiliMinus/utils/feed_back.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';

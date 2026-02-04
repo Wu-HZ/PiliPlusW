@@ -1,13 +1,13 @@
-import 'package:PiliPlus/common/widgets/button/icon_button.dart';
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/common/widgets/scroll_physics.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models/common/image_type.dart';
-import 'package:PiliPlus/models_new/live/live_area_list/area_item.dart';
-import 'package:PiliPlus/pages/live_area_detail/child/controller.dart';
-import 'package:PiliPlus/pages/live_area_detail/child/view.dart';
-import 'package:PiliPlus/pages/live_area_detail/controller.dart';
-import 'package:PiliPlus/pages/live_search/view.dart';
+import 'package:PiliMinus/common/widgets/button/icon_button.dart';
+import 'package:PiliMinus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliMinus/common/widgets/scroll_physics.dart';
+import 'package:PiliMinus/http/loading_state.dart';
+import 'package:PiliMinus/models/common/image_type.dart';
+import 'package:PiliMinus/models_new/live/live_area_list/area_item.dart';
+import 'package:PiliMinus/pages/live_area_detail/child/controller.dart';
+import 'package:PiliMinus/pages/live_area_detail/child/view.dart';
+import 'package:PiliMinus/pages/live_area_detail/controller.dart';
+import 'package:PiliMinus/pages/live_search/view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

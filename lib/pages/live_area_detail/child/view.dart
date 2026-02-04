@@ -1,14 +1,14 @@
-import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/common/skeleton/video_card_v.dart';
-import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
-import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
-import 'package:PiliPlus/common/widgets/self_sized_horizontal_list.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models_new/live/live_feed_index/card_data_list_item.dart';
-import 'package:PiliPlus/pages/live/widgets/live_item_app.dart';
-import 'package:PiliPlus/pages/live_area_detail/child/controller.dart';
-import 'package:PiliPlus/pages/search/widgets/search_text.dart';
-import 'package:PiliPlus/utils/grid.dart';
+import 'package:PiliMinus/common/constants.dart';
+import 'package:PiliMinus/common/skeleton/video_card_v.dart';
+import 'package:PiliMinus/common/widgets/flutter/refresh_indicator.dart';
+import 'package:PiliMinus/common/widgets/loading_widget/http_error.dart';
+import 'package:PiliMinus/common/widgets/self_sized_horizontal_list.dart';
+import 'package:PiliMinus/http/loading_state.dart';
+import 'package:PiliMinus/models_new/live/live_feed_index/card_data_list_item.dart';
+import 'package:PiliMinus/pages/live/widgets/live_item_app.dart';
+import 'package:PiliMinus/pages/live_area_detail/child/controller.dart';
+import 'package:PiliMinus/pages/search/widgets/search_text.dart';
+import 'package:PiliMinus/utils/grid.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

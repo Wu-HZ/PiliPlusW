@@ -1,13 +1,13 @@
 import 'dart:async';
 
-import 'package:PiliPlus/http/constants.dart';
-import 'package:PiliPlus/http/ua_type.dart';
-import 'package:PiliPlus/http/video.dart';
-import 'package:PiliPlus/models/common/video/cdn_type.dart';
-import 'package:PiliPlus/models/common/video/video_type.dart';
-import 'package:PiliPlus/models/video/play/url.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:PiliPlus/utils/video_utils.dart';
+import 'package:PiliMinus/http/constants.dart';
+import 'package:PiliMinus/http/ua_type.dart';
+import 'package:PiliMinus/http/video.dart';
+import 'package:PiliMinus/models/common/video/cdn_type.dart';
+import 'package:PiliMinus/models/common/video/video_type.dart';
+import 'package:PiliMinus/models/video/play/url.dart';
+import 'package:PiliMinus/utils/storage_pref.dart';
+import 'package:PiliMinus/utils/video_utils.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';

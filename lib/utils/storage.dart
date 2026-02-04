@@ -1,15 +1,15 @@
 import 'dart:convert';
 
-import 'package:PiliPlus/models/model_owner.dart';
-import 'package:PiliPlus/models/user/danmaku_rule_adapter.dart';
-import 'package:PiliPlus/models/user/info.dart';
-import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/accounts/account_adapter.dart';
-import 'package:PiliPlus/utils/accounts/account_type_adapter.dart';
-import 'package:PiliPlus/utils/accounts/cookie_jar_adapter.dart';
-import 'package:PiliPlus/utils/path_utils.dart';
-import 'package:PiliPlus/utils/set_int_adapter.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliMinus/models/model_owner.dart';
+import 'package:PiliMinus/models/user/danmaku_rule_adapter.dart';
+import 'package:PiliMinus/models/user/info.dart';
+import 'package:PiliMinus/utils/accounts.dart';
+import 'package:PiliMinus/utils/accounts/account_adapter.dart';
+import 'package:PiliMinus/utils/accounts/account_type_adapter.dart';
+import 'package:PiliMinus/utils/accounts/cookie_jar_adapter.dart';
+import 'package:PiliMinus/utils/path_utils.dart';
+import 'package:PiliMinus/utils/set_int_adapter.dart';
+import 'package:PiliMinus/utils/utils.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path/path.dart' as path;
 

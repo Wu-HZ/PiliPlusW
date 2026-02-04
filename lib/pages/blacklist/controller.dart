@@ -1,10 +1,10 @@
-import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
-import 'package:PiliPlus/http/black.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/http/video.dart';
-import 'package:PiliPlus/models_new/blacklist/data.dart';
-import 'package:PiliPlus/models_new/blacklist/list.dart';
-import 'package:PiliPlus/pages/common/common_list_controller.dart';
+import 'package:PiliMinus/common/widgets/dialog/dialog.dart';
+import 'package:PiliMinus/http/black.dart';
+import 'package:PiliMinus/http/loading_state.dart';
+import 'package:PiliMinus/http/video.dart';
+import 'package:PiliMinus/models_new/blacklist/data.dart';
+import 'package:PiliMinus/models_new/blacklist/list.dart';
+import 'package:PiliMinus/pages/common/common_list_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';

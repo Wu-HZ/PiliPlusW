@@ -1,7 +1,7 @@
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/http/video.dart';
-import 'package:PiliPlus/pages/common/common_list_controller.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliMinus/http/loading_state.dart';
+import 'package:PiliMinus/http/video.dart';
+import 'package:PiliMinus/pages/common/common_list_controller.dart';
+import 'package:PiliMinus/utils/storage_pref.dart';
 
 class RcmdController extends CommonListController {
   late bool enableSaveLastData = Pref.enableSaveLastData;

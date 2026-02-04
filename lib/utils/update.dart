@@ -1,14 +1,14 @@
 import 'dart:io' show Platform;
 
-import 'package:PiliPlus/build_config.dart';
-import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/http/api.dart';
-import 'package:PiliPlus/http/init.dart';
-import 'package:PiliPlus/http/ua_type.dart';
-import 'package:PiliPlus/utils/accounts/account.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/storage_key.dart';
+import 'package:PiliMinus/build_config.dart';
+import 'package:PiliMinus/common/constants.dart';
+import 'package:PiliMinus/http/api.dart';
+import 'package:PiliMinus/http/init.dart';
+import 'package:PiliMinus/http/ua_type.dart';
+import 'package:PiliMinus/utils/accounts/account.dart';
+import 'package:PiliMinus/utils/page_utils.dart';
+import 'package:PiliMinus/utils/storage.dart';
+import 'package:PiliMinus/utils/storage_key.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;

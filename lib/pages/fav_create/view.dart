@@ -1,14 +1,14 @@
 import 'dart:io' show File;
 
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
-import 'package:PiliPlus/http/fav.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/http/msg.dart';
-import 'package:PiliPlus/utils/extension/file_ext.dart';
-import 'package:PiliPlus/utils/extension/theme_ext.dart';
-import 'package:PiliPlus/utils/fav_utils.dart';
-import 'package:PiliPlus/utils/platform_utils.dart';
+import 'package:PiliMinus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliMinus/common/widgets/loading_widget/loading_widget.dart';
+import 'package:PiliMinus/http/fav.dart';
+import 'package:PiliMinus/http/loading_state.dart';
+import 'package:PiliMinus/http/msg.dart';
+import 'package:PiliMinus/utils/extension/file_ext.dart';
+import 'package:PiliMinus/utils/extension/theme_ext.dart';
+import 'package:PiliMinus/utils/fav_utils.dart';
+import 'package:PiliMinus/utils/platform_utils.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show LengthLimitingTextInputFormatter;

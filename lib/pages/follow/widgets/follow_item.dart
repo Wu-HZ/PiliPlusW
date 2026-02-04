@@ -1,8 +1,8 @@
-import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
-import 'package:PiliPlus/models_new/follow/list.dart';
-import 'package:PiliPlus/pages/share/view.dart' show UserModel;
-import 'package:PiliPlus/utils/feed_back.dart';
-import 'package:PiliPlus/utils/request_utils.dart';
+import 'package:PiliMinus/common/widgets/pendant_avatar.dart';
+import 'package:PiliMinus/models_new/follow/list.dart';
+import 'package:PiliMinus/pages/share/view.dart' show UserModel;
+import 'package:PiliMinus/utils/feed_back.dart';
+import 'package:PiliMinus/utils/request_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
