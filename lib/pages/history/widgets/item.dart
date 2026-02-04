@@ -68,7 +68,11 @@ class HistoryItem extends StatelessWidget {
                     SmartDialog.showToast('直播未开播');
                   }
                 } else if (business == 'pgc') {
-                  PageUtils.viewPgc(epId: item.history.epid);
+                  // Convert progress from seconds to milliseconds
+                  final progressMs = (item.progress != null && item.progress! > 0)
+                      ? item.progress! * 1000
+                      : null;
+                  PageUtils.viewPgc(epId: item.history.epid, progress: progressMs);
                 } else if (business == 'cheese') {
                   if (item.uri?.isNotEmpty == true) {
                     PageUtils.viewPgcFromUri(
@@ -86,12 +90,18 @@ class HistoryItem extends StatelessWidget {
                         part: item.history.page,
                       );
                   if (cid != null) {
+                    // Convert progress from seconds to milliseconds
+                    // progress == -1 means completed, start from beginning
+                    final progressMs = (item.progress != null && item.progress! > 0)
+                        ? item.progress! * 1000
+                        : null;
                     PageUtils.toVideoPage(
                       aid: aid,
                       bvid: bvid,
                       cid: cid,
                       cover: item.cover,
                       title: item.title,
+                      progress: progressMs,
                     );
                   }
                 }
