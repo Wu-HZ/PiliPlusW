@@ -103,8 +103,9 @@ class FloatingWindowManager {
 
     _windows[state.windowId] = state;
 
-    // Give audio focus to the new window
-    setAudioFocus(state.windowId);
+    // Track audio focus but don't mute other windows
+    // Let all windows play audio - user can close ones they don't want
+    _audioFocusWindowId = state.windowId;
 
     return state.windowId;
   }
@@ -120,11 +121,11 @@ class FloatingWindowManager {
     // Clear audio focus if this window had it
     if (_audioFocusWindowId == windowId) {
       _audioFocusWindowId = null;
-      // Give focus to most recent window if any remain
+      // Update focus tracking to most recent window (but don't mute others)
       if (_windows.isNotEmpty) {
         final mostRecent = _windows.values
             .reduce((a, b) => a.createdAt.isAfter(b.createdAt) ? a : b);
-        setAudioFocus(mostRecent.windowId);
+        _audioFocusWindowId = mostRecent.windowId;
       }
     }
 
@@ -227,7 +228,10 @@ class FloatingWindowManager {
 
   /// Called when user taps on a floating window
   void onWindowTapped(String windowId) {
-    setAudioFocus(windowId);
+    // Just track which window was tapped, don't mute others
+    if (_windows.containsKey(windowId)) {
+      _audioFocusWindowId = windowId;
+    }
   }
 
   /// Get the staggered position for a new window (to avoid overlapping)
@@ -247,9 +251,14 @@ class FloatingWindowManager {
     // Remove the overlay entry
     window.overlayEntry.remove();
 
-    // Clear audio focus if this window had it
+    // Update audio focus tracking
     if (_audioFocusWindowId == windowId) {
       _audioFocusWindowId = null;
+      if (_windows.isNotEmpty) {
+        final mostRecent = _windows.values
+            .reduce((a, b) => a.createdAt.isAfter(b.createdAt) ? a : b);
+        _audioFocusWindowId = mostRecent.windowId;
+      }
     }
 
     return window;
