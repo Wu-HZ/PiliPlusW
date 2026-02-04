@@ -205,20 +205,6 @@ class PlPlayerController {
 
   bool isMuted = false;
 
-  /// Set mute state for audio focus management in floating windows
-  Future<void> setMute(bool muted) async {
-    isMuted = muted;
-    if (_videoPlayerController != null) {
-      if (muted) {
-        await _videoPlayerController!.setVolume(0.0);
-      } else {
-        await _videoPlayerController!.setVolume(
-          PlatformUtils.isDesktop ? volume.value * 100 : 100.0,
-        );
-      }
-    }
-  }
-
   /// 听视频
   late final RxBool onlyPlayAudio = false.obs;
 
@@ -338,6 +324,125 @@ class PlPlayerController {
         'autoEnable': false,
       });
     }
+  }
+
+  /// Trigger floating window for current video
+  /// Creates a floating window with the current player and navigates to home
+  ///
+  /// Parameters:
+  /// - [context]: BuildContext for accessing Overlay
+  /// - [bvid]: Video BV ID
+  /// - [cid]: Video CID
+  /// - [heroTag]: Hero tag for video detail page
+  /// - [videoType]: Type of video (UGC/PGC)
+  /// - [title]: Optional video title for display
+  /// - [coverUrl]: Optional cover URL
+  /// - [aid]: Optional AV ID
+  /// - [epId]: Optional episode ID (for PGC)
+  /// - [seasonId]: Optional season ID (for PGC)
+  void triggerFloatingWindow({
+    required BuildContext context,
+    required String bvid,
+    required int cid,
+    required String heroTag,
+    required VideoType videoType,
+    String? title,
+    String? coverUrl,
+    int? aid,
+    int? epId,
+    int? seasonId,
+  }) {
+    // Don't create floating window if player is not initialized
+    if (_videoPlayerController == null || _videoController == null) {
+      return;
+    }
+
+    // Generate unique window ID
+    final windowId = floatingWindowManager.generateWindowId();
+
+    // Calculate floating window dimensions
+    final dimensions = FloatingVideoWindow.calculateDimensions(this);
+    final floatingWidth = dimensions.width;
+    final floatingHeight = dimensions.height;
+
+    // Get staggered position to avoid overlapping windows
+    final staggeredTop = floatingWindowManager.getStaggeredTopPosition();
+    final initialPosition = Offset(20.0, staggeredTop);
+
+    // Save current position
+    final savedPosition = position.value;
+
+    // Create the OverlayEntry
+    late final OverlayEntry overlayEntry;
+    overlayEntry = OverlayEntry(
+      builder: (context) => FloatingVideoWindow(
+        windowId: windowId,
+        playerController: this,
+        isLive: isLive,
+        floatingWidth: floatingWidth,
+        floatingHeight: floatingHeight,
+        initialPosition: initialPosition,
+        onTap: () {
+          // Navigate back to the video page - restoration happens in initState
+          // Pass current position to preserve playback progress
+          PageUtils.toVideoPage(
+            videoType: videoType,
+            aid: aid,
+            bvid: bvid,
+            cid: cid,
+            seasonId: seasonId,
+            epId: epId,
+            cover: coverUrl,
+            title: title,
+            progress: position.value.inMilliseconds,
+          );
+        },
+        onClose: () {
+          // Close and dispose the floating window
+          floatingWindowManager.closeWindowAndDispose(windowId);
+        },
+        onPositionChanged: (newPosition) {
+          // Update saved position in manager
+          floatingWindowManager.updateWindowPosition(windowId, newPosition);
+        },
+      ),
+    );
+
+    // Create the floating window state
+    final windowState = FloatingWindowState(
+      windowId: windowId,
+      bvid: bvid,
+      cid: cid,
+      heroTag: heroTag,
+      playerController: this,
+      overlayEntry: overlayEntry,
+      videoType: videoType,
+      savedPosition: savedPosition,
+      position: initialPosition,
+      size: Size(floatingWidth, floatingHeight),
+      title: title,
+      coverUrl: coverUrl,
+      aid: aid,
+      epId: epId,
+      seasonId: seasonId,
+    );
+
+    // Register with manager (this may close oldest window if at limit)
+    final result = floatingWindowManager.createWindow(windowState);
+    if (result == null) {
+      // Window creation failed
+      return;
+    }
+
+    // Insert the overlay entry into the overlay
+    Overlay.of(context).insert(overlayEntry);
+
+    // Detach from singleton - set _instance to null so a new player can be created
+    _instance = null;
+    _playerCount = 0;
+
+    // Navigate back to home
+    Get.until((route) => route.isFirst);
   }
 
   // 弹幕相关配置
@@ -514,6 +619,12 @@ class PlPlayerController {
 
   static bool instanceExists() {
     return _instance != null;
+  }
+
+  /// Restore a player controller instance (e.g., from a floating window)
+  /// Must be called BEFORE getInstance() to ensure it returns the restored instance
+  static void restoreInstance(PlPlayerController controller) {
+    _instance = controller;
   }
 
   static void setPlayCallBack(Future<void>? Function()? playCallBack) {
@@ -1382,6 +1493,19 @@ class PlPlayerController {
     });
   }
 
+  /// Set mute state for audio focus management in floating windows
+  Future<void> setMute(bool muted) async {
+    isMuted = muted;
+    if (_videoPlayerController != null) {
+      if (PlatformUtils.isDesktop) {
+        await _videoPlayerController!.setVolume(muted ? 0.0 : volume.value * 100);
+      } else {
+        // On mobile, we control the player's volume directly
+        await _videoPlayerController!.setVolume(muted ? 0.0 : 100.0);
+      }
+    }
+  }
+
   /// Toggle Change the videofit accordingly
   void toggleVideoFit(VideoFitType value) {
     videoFit.value = value;
@@ -1702,118 +1826,6 @@ class PlPlayerController {
       SettingBoxKey.subtitleStrokeWidth: subtitleStrokeWidth,
       SettingBoxKey.subtitleFontWeight: subtitleFontWeight,
     });
-  }
-
-  /// Triggers a floating window for the current video
-  /// Returns true if successful, false otherwise
-  bool triggerFloatingWindow({
-    required String heroTag,
-    required VoidCallback onTap,
-    int? aid,
-    int? epId,
-    int? seasonId,
-    String? title,
-    String? coverUrl,
-  }) {
-    if (videoController == null) {
-      return false;
-    }
-
-    final context = Get.context;
-    if (context == null) {
-      return false;
-    }
-
-    // Check if we can create a new window
-    if (!floatingWindowManager.canCreateWindow) {
-      floatingWindowManager.closeOldestWindow();
-    }
-
-    // Calculate dimensions based on video aspect ratio
-    final size = FloatingVideoWindow.calculateDimensions(this);
-
-    // Generate unique window ID
-    final windowId = floatingWindowManager.generateWindowId();
-
-    // Calculate staggered position for multiple windows
-    final topPosition = floatingWindowManager.getStaggeredTopPosition();
-    final screenSize = MediaQuery.sizeOf(context);
-    final initialPosition = Offset(
-      screenSize.width - size.width - 20,
-      topPosition,
-    );
-
-    // Get the root overlay to ensure persistence across route changes
-    final overlayState = Overlay.of(context, rootOverlay: true);
-
-    // Create overlay entry
-    late OverlayEntry overlayEntry;
-    overlayEntry = OverlayEntry(
-      builder: (context) => FloatingVideoWindow(
-        windowId: windowId,
-        playerController: this,
-        floatingWidth: size.width,
-        floatingHeight: size.height,
-        isLive: isLive,
-        initialPosition: initialPosition,
-        onTap: () {
-          // Give audio focus when tapped
-          floatingWindowManager.onWindowTapped(windowId);
-          // Call the provided onTap callback to navigate to video detail
-          onTap();
-        },
-        onClose: () {
-          floatingWindowManager.closeWindowAndDispose(windowId);
-        },
-        onPositionChanged: (position) {
-          floatingWindowManager.updateWindowPosition(windowId, position);
-        },
-      ),
-    );
-
-    // Create state and register with FloatingWindowManager
-    final windowState = FloatingWindowState(
-      windowId: windowId,
-      bvid: _bvid ?? '',
-      cid: cid ?? 0,
-      heroTag: heroTag,
-      playerController: this,
-      overlayEntry: overlayEntry,
-      videoType: _videoType,
-      savedPosition: position.value,
-      position: initialPosition,
-      size: size,
-      title: title,
-      coverUrl: coverUrl,
-      aid: aid ?? _aid,
-      epId: epId ?? _epid,
-      seasonId: seasonId ?? _seasonId,
-    );
-
-    floatingWindowManager.createWindow(windowState);
-
-    // Detach this player from the singleton so the next video gets a fresh player instance
-    if (_instance == this) {
-      _instance = null;
-    }
-
-    // Insert the overlay entry into the root overlay
-    overlayState.insert(overlayEntry);
-
-    // Ensure player continues playing after a short delay
-    // (to allow overlay to be properly mounted)
-    Future.delayed(const Duration(milliseconds: 100), () {
-      if (playerStatus.value != PlayerStatus.playing) {
-        play();
-      }
-    });
-
-    return true;
-  }
-
-  /// Restore this controller as the singleton instance (used when returning from floating window)
-  static void restoreInstance(PlPlayerController controller) {
-    _instance = controller;
   }
 
   bool isCloseAll = false;

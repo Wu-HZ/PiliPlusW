@@ -127,9 +127,25 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   final videoRelatedKey = GlobalKey();
   final videoIntroKey = GlobalKey();
 
+  bool _restoredFromFloatingWindow = false;
+
   @override
   void initState() {
     super.initState();
+
+    // Check if there's a floating window for this video and restore the player
+    final args = Get.arguments;
+    final bvid = args?['bvid'] as String?;
+    if (bvid != null) {
+      final floatingWindow = floatingWindowManager.findWindowByBvid(bvid);
+      if (floatingWindow != null) {
+        // Restore the player instance from the floating window
+        PlPlayerController.restoreInstance(floatingWindow.playerController);
+        // Remove the floating window UI without disposing the player
+        floatingWindowManager.transferToMainView(floatingWindow.windowId);
+        _restoredFromFloatingWindow = true;
+      }
+    }
 
     PlPlayerController.setPlayCallBack(playCallBack);
     videoDetailController = Get.put(VideoDetailController(), tag: heroTag);
@@ -161,6 +177,20 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
 
   // 获取视频资源，初始化播放器
   Future<void> videoSourceInit() async {
+    // Skip video URL query if restored from floating window - player is already initialized
+    if (_restoredFromFloatingWindow) {
+      plPlayerController = videoDetailController.plPlayerController;
+      // Set autoPlay and videoState so the video widget displays
+      videoDetailController.autoPlay.value = true;
+      videoDetailController.videoState.value = const Success(null);
+      plPlayerController!
+        ..addStatusLister(playerListener)
+        ..addPositionListener(positionListener);
+      // Mark as no longer restored to allow normal behavior on subsequent navigations
+      _restoredFromFloatingWindow = false;
+      return;
+    }
+
     videoDetailController.queryVideoUrl();
     if (videoDetailController.autoPlay.value) {
       plPlayerController = videoDetailController.plPlayerController;
@@ -717,13 +747,30 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                                                     .onSurface,
                                               ),
                                               onPressed: () {
-                                                videoDetailController
-                                                    .plPlayerController
-                                                  ..isCloseAll = true
-                                                  ..dispose();
-                                                Get.until(
-                                                  (route) => route.isFirst,
-                                                );
+                                                if (videoDetailController.autoPlay.value &&
+                                                    plPlayerController != null) {
+                                                  // Create floating window and go home
+                                                  plPlayerController!.triggerFloatingWindow(
+                                                    context: context,
+                                                    bvid: videoDetailController.bvid,
+                                                    cid: videoDetailController.cid.value,
+                                                    heroTag: heroTag,
+                                                    videoType: videoDetailController.videoType,
+                                                    coverUrl: videoDetailController.cover.value,
+                                                    aid: videoDetailController.aid,
+                                                    epId: videoDetailController.epId,
+                                                    seasonId: videoDetailController.seasonId,
+                                                  );
+                                                } else {
+                                                  // No active player, just go home
+                                                  videoDetailController
+                                                      .plPlayerController
+                                                    ..isCloseAll = true
+                                                    ..dispose();
+                                                  Get.until(
+                                                    (route) => route.isFirst,
+                                                  );
+                                                }
                                               },
                                             ),
                                           ),
@@ -1255,6 +1302,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                         ],
                       ),
                       onPressed: () {
+                        // In manual play mode, video isn't playing, just go home
                         videoDetailController.plPlayerController
                           ..isCloseAll = true
                           ..dispose();

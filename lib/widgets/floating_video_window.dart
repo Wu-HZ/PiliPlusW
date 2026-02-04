@@ -45,10 +45,13 @@ class FloatingVideoWindow extends StatefulWidget {
         controller.videoPlayerController?.state.width?.toDouble();
 
     // Calculate aspect ratio based on video orientation
-    double aspectRatio = controller.isVertical ? 16.0 / 9.0 : 9.0 / 16.0;
+    double aspectRatio =
+        !controller.isVertical ? 9.0 / 16.0 : 16.0 / 9.0;
 
-    if (videoWidth != null && videoHeight != null && videoWidth > 0) {
-      aspectRatio = videoHeight / videoWidth;
+    if (videoWidth != null && videoHeight != null) {
+      if ((videoWidth > videoHeight) ^ controller.isVertical) {
+        aspectRatio = videoHeight / videoWidth;
+      }
     }
 
     double floatingWidth = aspectRatio > 1 ? 150.0 : 240.0;
@@ -63,7 +66,6 @@ class FloatingVideoWindow extends StatefulWidget {
 
 class _FloatingVideoWindowState extends State<FloatingVideoWindow> {
   late Offset _position;
-  bool _isDragging = false;
 
   @override
   void initState() {
@@ -105,10 +107,6 @@ class _FloatingVideoWindowState extends State<FloatingVideoWindow> {
       left: _position.dx,
       top: _position.dy,
       child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onPanStart: (_) {
-          setState(() => _isDragging = true);
-        },
         onPanUpdate: (details) {
           setState(() {
             _position = Offset(
@@ -124,11 +122,10 @@ class _FloatingVideoWindowState extends State<FloatingVideoWindow> {
           });
         },
         onPanEnd: (_) {
-          setState(() => _isDragging = false);
           widget.onPositionChanged?.call(_position);
         },
         child: Material(
-          elevation: _isDragging ? 12 : 8,
+          elevation: 8,
           borderRadius: BorderRadius.circular(8),
           clipBehavior: Clip.antiAlias,
           child: SizedBox(
@@ -137,26 +134,24 @@ class _FloatingVideoWindowState extends State<FloatingVideoWindow> {
             child: Column(
               children: [
                 // Video area
-                GestureDetector(
-                  onTap: widget.onTap,
-                  child: SizedBox(
-                    width: widget.floatingWidth,
-                    height: videoAreaHeight,
+                SizedBox(
+                  width: widget.floatingWidth,
+                  height: videoAreaHeight,
+                  child: InkWell(
+                    onTap: widget.onTap,
                     child: widget.playerController.videoController != null
-                        ? Obx(
-                            () => Video(
-                              controller:
-                                  widget.playerController.videoController!,
-                              controls: NoVideoControls,
-                              pauseUponEnteringBackgroundMode: !widget
-                                  .playerController
-                                  .continuePlayInBackground
-                                  .value,
-                              resumeUponEnteringForegroundMode: true,
-                              subtitleViewConfiguration:
-                                  widget.playerController.subtitleConfig.value,
-                              fit: BoxFit.contain,
-                            ),
+                        ? Video(
+                            controller:
+                                widget.playerController.videoController!,
+                            controls: NoVideoControls,
+                            pauseUponEnteringBackgroundMode: !widget
+                                .playerController
+                                .continuePlayInBackground
+                                .value,
+                            resumeUponEnteringForegroundMode: true,
+                            subtitleViewConfiguration:
+                                widget.playerController.subtitleConfig.value,
+                            fit: BoxFit.contain,
                           )
                         : const ColoredBox(
                             color: Colors.black,
@@ -186,11 +181,12 @@ class _FloatingVideoWindowState extends State<FloatingVideoWindow> {
                         Obx(
                           () => _buildIconButton(
                             context,
-                            widget.playerController.playerStatus.playing
+                            widget.playerController.playerStatus.value ==
+                                    PlayerStatus.playing
                                 ? Icons.pause
                                 : Icons.play_arrow,
-                            () => widget.playerController.videoPlayerController
-                                ?.playOrPause(),
+                            () => widget.playerController
+                                .videoPlayerController?.playOrPause(),
                           ),
                         ),
                       if (!widget.isLive)

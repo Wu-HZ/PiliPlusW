@@ -1891,41 +1891,23 @@ class HeaderControlState extends State<HeaderControl>
                       size: 15,
                       color: Colors.white,
                     ),
-                    onPressed: () async {
-                      // Exit fullscreen first if needed
+                    onPressed: () {
+                      // Exit fullscreen if needed before triggering floating window
                       if (isFullScreen) {
-                        await plPlayerController.triggerFullScreen(status: false);
+                        plPlayerController.triggerFullScreen(status: false);
                       }
-
-                      // Try to create a floating window
-                      final success = plPlayerController.triggerFloatingWindow(
+                      // Create a floating window and navigate to home
+                      plPlayerController.triggerFloatingWindow(
+                        context: context,
+                        bvid: videoDetailCtr.bvid,
+                        cid: videoDetailCtr.cid.value,
                         heroTag: heroTag,
-                        onTap: () {
-                          // Navigate back to the video detail page
-                          PageUtils.toVideoPage(
-                            bvid: videoDetailCtr.bvid,
-                            cid: videoDetailCtr.cid.value,
-                            cover: videoDetailCtr.cover.value,
-                          );
-                        },
+                        videoType: videoDetailCtr.videoType,
+                        coverUrl: videoDetailCtr.cover.value,
                         aid: videoDetailCtr.aid,
                         epId: videoDetailCtr.epId,
                         seasonId: videoDetailCtr.seasonId,
-                        coverUrl: videoDetailCtr.cover.value,
                       );
-
-                      if (success) {
-                        // Small delay to allow overlay to mount before navigation
-                        await Future.delayed(const Duration(milliseconds: 50));
-                        // Navigate to home
-                        Get.until((route) => route.isFirst);
-                      } else {
-                        // Fallback to original behavior if floating window creation fails
-                        videoDetailCtr.plPlayerController
-                          ..isCloseAll = true
-                          ..dispose();
-                        Get.until((route) => route.isFirst);
-                      }
                     },
                   ),
                 ),
