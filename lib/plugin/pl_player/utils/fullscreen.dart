@@ -6,14 +6,19 @@ import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:auto_orientation/auto_orientation.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
+import 'package:window_manager/window_manager.dart';
 
 bool _isDesktopFullScreen = false;
+Rect? _windowBoundsBeforeFullscreen;
 
 @pragma('vm:notify-debugger-on-exception')
 Future<void> enterDesktopFullscreen({bool inAppFullScreen = false}) async {
   if (!inAppFullScreen && !_isDesktopFullScreen) {
     _isDesktopFullScreen = true;
     try {
+      // Save window bounds before entering fullscreen
+      _windowBoundsBeforeFullscreen = await windowManager.getBounds();
       await const MethodChannel(
         'com.alexmercerind/media_kit_video',
       ).invokeMethod('Utils.EnterNativeFullscreen');
@@ -29,6 +34,13 @@ Future<void> exitDesktopFullscreen() async {
       await const MethodChannel(
         'com.alexmercerind/media_kit_video',
       ).invokeMethod('Utils.ExitNativeFullscreen');
+      // Restore window bounds to the exact position before fullscreen
+      if (_windowBoundsBeforeFullscreen != null) {
+        // Small delay to let the native fullscreen exit complete
+        await Future.delayed(const Duration(milliseconds: 50));
+        await windowManager.setBounds(_windowBoundsBeforeFullscreen!);
+        _windowBoundsBeforeFullscreen = null;
+      }
     } catch (_) {}
   }
 }
