@@ -29,6 +29,7 @@ import 'package:PiliMinus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliMinus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliMinus/plugin/pl_player/models/video_fit_type.dart';
 import 'package:PiliMinus/plugin/pl_player/utils/fullscreen.dart';
+import 'package:PiliMinus/services/local_history_service.dart';
 import 'package:PiliMinus/services/service_locator.dart';
 import 'package:PiliMinus/utils/accounts.dart';
 import 'package:PiliMinus/utils/extension/box_ext.dart';
@@ -176,6 +177,14 @@ class PlPlayerController {
   int _heartDuration = 0;
   int? width;
   int? height;
+
+  // Local history metadata
+  String? _title;
+  String? _cover;
+  String? _authorName;
+  int? _authorMid;
+  String? _authorFace;
+  int? _videoDuration;
 
   late final tryLook = !Accounts.get(AccountType.video).isLogin && Pref.p1080;
 
@@ -741,6 +750,12 @@ class PlPlayerController {
     String? dirPath,
     String? typeTag,
     int? mediaType,
+    // Local history metadata
+    String? title,
+    String? cover,
+    String? authorName,
+    int? authorMid,
+    String? authorFace,
   }) async {
     try {
       this.dirPath = dirPath;
@@ -767,6 +782,14 @@ class PlPlayerController {
       _epid = epid;
       _seasonId = seasonId;
       _pgcType = pgcType;
+
+      // Local history metadata
+      _title = title;
+      _cover = cover;
+      _authorName = authorName;
+      _authorMid = authorMid;
+      _authorFace = authorFace;
+      _videoDuration = duration?.inSeconds;
 
       if (showSeekPreview) {
         _clearPreview();
@@ -1768,7 +1791,7 @@ class PlPlayerController {
     if (isLive) {
       return;
     }
-    if (!enableHeart || MineController.anonymity.value || progress == 0) {
+    if (MineController.anonymity.value || progress == 0) {
       return;
     } else if (playerStatus.value == PlayerStatus.paused) {
       if (!isManual) {
@@ -1781,33 +1804,50 @@ class PlPlayerController {
     if ((durationSeconds.value - position.value).inMilliseconds > 1000) {
       isComplete = false;
     }
-    // 播放状态变化时，更新
 
+    // Determine business type based on video type
+    final vType = videoType ?? _videoType;
+    String business = 'archive';
+    if (vType == VideoType.pgc) {
+      business = 'pgc';
+    }
+
+    // 播放状态变化时，更新本地历史
     if (type == HeartBeatType.status || type == HeartBeatType.completed) {
-      await VideoHttp.heartBeat(
+      await LocalHistoryService.addFromPlayback(
         aid: aid ?? _aid,
         bvid: bvid ?? _bvid,
         cid: cid ?? this.cid,
-        progress: isComplete ? -1 : progress,
         epid: epid ?? _epid,
+        title: _title,
+        cover: _cover,
+        progress: isComplete ? -1 : progress,
+        duration: _videoDuration ?? durationSeconds.value.inSeconds,
+        authorName: _authorName,
+        authorMid: _authorMid,
+        authorFace: _authorFace,
+        business: business,
         seasonId: seasonId ?? _seasonId,
-        subType: pgcType ?? _pgcType,
-        videoType: videoType ?? _videoType,
       );
       return;
     }
     // 正常播放时，间隔5秒更新一次
     else if (progress - _heartDuration >= 5) {
       _heartDuration = progress;
-      await VideoHttp.heartBeat(
+      await LocalHistoryService.addFromPlayback(
         aid: aid ?? _aid,
         bvid: bvid ?? _bvid,
         cid: cid ?? this.cid,
-        progress: progress,
         epid: epid ?? _epid,
+        title: _title,
+        cover: _cover,
+        progress: progress,
+        duration: _videoDuration ?? durationSeconds.value.inSeconds,
+        authorName: _authorName,
+        authorMid: _authorMid,
+        authorFace: _authorFace,
+        business: business,
         seasonId: seasonId ?? _seasonId,
-        subType: pgcType ?? _pgcType,
-        videoType: videoType ?? _videoType,
       );
     }
   }

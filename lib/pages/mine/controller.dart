@@ -51,11 +51,7 @@ class MineController extends CommonDataController<FavFolderData, FavFolderData>
           size: 23,
           icon: Icons.history,
           title: '观看记录',
-          onTap: () {
-            if (isLogin) {
-              Get.toNamed('/history');
-            }
-          },
+          onTap: () => Get.toNamed('/history'),
         ),
         (
           size: 20,

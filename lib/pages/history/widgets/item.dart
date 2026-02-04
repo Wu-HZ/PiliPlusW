@@ -34,9 +34,9 @@ class HistoryItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final hasDuration = item.duration != null && item.duration != 0;
-    int aid = item.history.oid!;
+    int aid = item.history.oid ?? 0;
     String bvid = item.history.bvid ?? IdUtils.av2bv(aid);
-    final business = item.history.business;
+    final business = item.history.business ?? 'archive';
     final enableMultiSelect = ctr.enableMultiSelect.value;
 
     final onLongPress = enableMultiSelect
@@ -51,7 +51,7 @@ class HistoryItem extends StatelessWidget {
         onTap: enableMultiSelect
             ? () => ctr.onSelect(item)
             : () async {
-                if (business?.contains('article') == true) {
+                if (business.contains('article') == true) {
                   PageUtils.toDupNamed(
                     '/articlePage',
                     parameters: {
@@ -217,7 +217,7 @@ class HistoryItem extends StatelessWidget {
                       item.badge != '番剧' &&
                       item.tagName?.contains('动画') != true &&
                       business != 'live' &&
-                      business?.contains('article') != true)
+                      !business.contains('article'))
                     PopupMenuItem(
                       onTap: () =>
                           UserHttp.toViewLater(bvid: item.history.bvid),
@@ -231,7 +231,7 @@ class HistoryItem extends StatelessWidget {
                       ),
                     ),
                   PopupMenuItem(
-                    onTap: () => onDelete(item.kid!, business!),
+                    onTap: () => onDelete(item.kid ?? aid, business),
                     height: 38,
                     child: const Row(
                       children: [
@@ -251,19 +251,20 @@ class HistoryItem extends StatelessWidget {
   }
 
   Widget content(ThemeData theme) {
+    final videoCount = item.videos ?? 1;
     return Expanded(
       child: Column(
         spacing: 2,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            item.title!,
+            item.title ?? '',
             style: TextStyle(
               fontSize: theme.textTheme.bodyMedium!.fontSize,
               height: 1.42,
               letterSpacing: 0.3,
             ),
-            maxLines: item.videos! > 1 ? 1 : 2,
+            maxLines: videoCount > 1 ? 1 : 2,
             overflow: TextOverflow.ellipsis,
           ),
           if (item.history.business == 'pgc' &&
@@ -288,13 +289,14 @@ class HistoryItem extends StatelessWidget {
                 color: theme.colorScheme.outline,
               ),
             ),
-          Text(
-            DateFormatUtils.chatFormat(item.viewAt!, isHistory: true),
-            style: TextStyle(
-              fontSize: theme.textTheme.labelMedium!.fontSize,
-              color: theme.colorScheme.outline,
+          if (item.viewAt != null)
+            Text(
+              DateFormatUtils.chatFormat(item.viewAt!, isHistory: true),
+              style: TextStyle(
+                fontSize: theme.textTheme.labelMedium!.fontSize,
+                color: theme.colorScheme.outline,
+              ),
             ),
-          ),
         ],
       ),
     );

@@ -26,4 +26,14 @@ class History {
     part: json['part'],
     business: json['business'],
   );
+
+  Map<String, dynamic> toJson() => {
+    'oid': oid,
+    'epid': epid,
+    'bvid': bvid,
+    'page': page,
+    'cid': cid,
+    'part': part,
+    'business': business,
+  };
 }

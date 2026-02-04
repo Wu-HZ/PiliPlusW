@@ -1,35 +1,29 @@
 import 'package:PiliMinus/common/widgets/dialog/dialog.dart';
 import 'package:PiliMinus/http/loading_state.dart';
-import 'package:PiliMinus/http/user.dart';
-import 'package:PiliMinus/models_new/history/data.dart';
 import 'package:PiliMinus/models_new/history/list.dart';
 import 'package:PiliMinus/models_new/history/tab.dart';
 import 'package:PiliMinus/pages/common/multi_select/multi_select_controller.dart';
 import 'package:PiliMinus/pages/history/base_controller.dart';
-import 'package:PiliMinus/utils/accounts/account.dart';
-import 'package:PiliMinus/utils/extension/iterable_ext.dart';
+import 'package:PiliMinus/services/local_history_service.dart';
 import 'package:PiliMinus/utils/extension/scroll_controller_ext.dart';
-import 'package:PiliMinus/utils/storage.dart';
-import 'package:PiliMinus/utils/storage_key.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
 class HistoryController
-    extends MultiSelectController<HistoryData, HistoryItemModel>
+    extends MultiSelectController<List<HistoryItemModel>, HistoryItemModel>
     with GetSingleTickerProviderStateMixin {
   HistoryController(this.type);
 
   late final baseCtr = Get.put(HistoryBaseController());
 
-  Account get account => baseCtr.account;
-
   final String? type;
   TabController? tabController;
   late RxList<HistoryTab> tabs = <HistoryTab>[].obs;
 
-  int? max;
-  int? viewAt;
+  // Offset-based pagination
+  int _offset = 0;
+  static const int _pageSize = 20;
 
   @override
   RxInt get rxCount => baseCtr.checkedCount;
@@ -40,51 +34,42 @@ class HistoryController
   @override
   void onInit() {
     super.onInit();
-    historyStatus();
+    _initTabs();
     queryData();
+  }
+
+  void _initTabs() {
+    // Static tabs for local history (no API response needed)
+    if (type == null) {
+      tabs.value = [
+        HistoryTab(type: 'archive', name: '视频'),
+        HistoryTab(type: 'pgc', name: '番剧'),
+        HistoryTab(type: 'live', name: '直播'),
+      ];
+      tabController = TabController(
+        length: tabs.length + 1,
+        vsync: this,
+      );
+    }
   }
 
   @override
   Future<void> onRefresh() {
-    max = null;
-    viewAt = null;
+    _offset = 0;
     return super.onRefresh();
   }
 
   @override
-  List<HistoryItemModel>? getDataList(HistoryData response) {
-    return response.list;
+  List<HistoryItemModel>? getDataList(List<HistoryItemModel> response) {
+    return response;
   }
 
   @override
-  bool customHandleResponse(bool isRefresh, Success<HistoryData> response) {
-    HistoryData data = response.response;
-    isEnd = data.list.isNullOrEmpty;
-    max = data.list?.lastOrNull?.history.oid;
-    viewAt = data.list?.lastOrNull?.viewAt;
-
-    if (isRefresh && type == null) {
-      if (tabs.isEmpty && data.tab?.isNotEmpty == true) {
-        tabs.value = data.tab!;
-        tabController = TabController(
-          length: data.tab!.length + 1,
-          vsync: this,
-        );
-      }
-    }
-
+  bool customHandleResponse(bool isRefresh, Success<List<HistoryItemModel>> response) {
+    List<HistoryItemModel> data = response.response;
+    isEnd = data.length < _pageSize;
+    _offset += data.length;
     return false;
-  }
-
-  // 观看历史暂停状态
-  Future<void> historyStatus() async {
-    final res = await UserHttp.historyStatus(account: account);
-    if (res case Success(:final response)) {
-      baseCtr.pauseStatus.value = response;
-      GStorage.localCache.put(LocalCacheKey.historyPause, response);
-    } else {
-      res.toast();
-    }
   }
 
   // 删除某条历史记录
@@ -105,20 +90,14 @@ class HistoryController
   }
 
   Future<void> _onDelete(Set<HistoryItemModel> removeList) async {
-    SmartDialog.showLoading(msg: '请求中');
-    final res = await UserHttp.delHistory(
-      removeList
-          .map((item) => '${item.history.business}_${item.kid}')
-          .join(','),
-      account: account,
-    );
+    SmartDialog.showLoading(msg: '删除中');
+    final keys = removeList
+        .map((item) => '${item.history.business}_${item.history.oid}')
+        .toList();
+    await LocalHistoryService.deleteMultiple(keys);
     SmartDialog.dismiss();
-    if (res.isSuccess) {
-      afterDelete(removeList);
-      SmartDialog.showToast('已删除');
-    } else {
-      res.toast();
-    }
+    afterDelete(removeList);
+    SmartDialog.showToast('已删除');
   }
 
   // 删除选中的记录
@@ -133,12 +112,18 @@ class HistoryController
   }
 
   @override
-  Future<LoadingState<HistoryData>> customGetData() => UserHttp.historyList(
-    type: type ?? 'all',
-    max: max,
-    viewAt: viewAt,
-    account: account,
-  );
+  Future<LoadingState<List<HistoryItemModel>>> customGetData() async {
+    // Simulate async behavior for consistency
+    await Future.delayed(Duration.zero);
+
+    final items = LocalHistoryService.getAll(
+      type: type ?? 'all',
+      limit: _pageSize,
+      offset: loadingState.value is Success ? _offset : 0,
+    );
+
+    return Success(items);
+  }
 
   @override
   void onClose() {

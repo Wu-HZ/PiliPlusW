@@ -160,7 +160,6 @@ class _HistoryPageState extends State<HistoryPage>
 
   AppBar get _buildAppBar => AppBar(
     title: const Text('观看记录'),
-    bottom: _buildPauseTip,
     actions: [
       IconButton(
         tooltip: '搜索',
@@ -169,14 +168,6 @@ class _HistoryPageState extends State<HistoryPage>
       ),
       PopupMenuButton(
         itemBuilder: (_) => [
-          PopupMenuItem(
-            onTap: () => _historyController.baseCtr.onPauseHistory(context),
-            child: Text(
-              !_historyController.baseCtr.pauseStatus.value
-                  ? '暂停观看记录'
-                  : '恢复观看记录',
-            ),
-          ),
           PopupMenuItem(
             onTap: () => _historyController.baseCtr.onClearHistory(
               context,
@@ -228,69 +219,15 @@ class _HistoryPageState extends State<HistoryPage>
                 },
                 itemCount: response.length,
               )
-            : HttpError(onReload: _historyController.onReload),
+            : HttpError(
+                errMsg: '暂无观看记录\n观看视频后会自动保存到本地',
+                onReload: _historyController.onReload,
+              ),
       Error(:final errMsg) => HttpError(
         errMsg: errMsg,
         onReload: _historyController.onReload,
       ),
     };
-  }
-
-  PreferredSizeWidget? get _buildPauseTip {
-    if (_historyController.baseCtr.pauseStatus.value) {
-      final theme = Theme.of(context).colorScheme;
-      return PreferredSize(
-        preferredSize: const Size.fromHeight(38),
-        child: Container(
-          height: 38,
-          color: theme.secondaryContainer.withValues(alpha: 0.8),
-          padding: const EdgeInsets.only(left: 16, right: 6),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text.rich(
-                  strutStyle: const StrutStyle(height: 1, leading: 0),
-                  style: TextStyle(
-                    height: 1,
-                    color: theme.onSecondaryContainer,
-                  ),
-                  TextSpan(
-                    children: [
-                      WidgetSpan(
-                        alignment: PlaceholderAlignment.middle,
-                        child: Icon(
-                          Icons.info_outline,
-                          size: 18,
-                          color: theme.onSecondaryContainer,
-                        ),
-                      ),
-                      const TextSpan(text: ' 历史记录功能已关闭'),
-                    ],
-                  ),
-                ),
-              ),
-              GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () => _historyController.baseCtr.onPauseHistory(context),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 6,
-                    horizontal: 10,
-                  ),
-                  child: Text(
-                    '点击开启',
-                    strutStyle: const StrutStyle(height: 1, leading: 0),
-                    style: TextStyle(height: 1, color: theme.primary),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return null;
   }
 
   @override

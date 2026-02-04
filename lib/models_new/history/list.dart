@@ -81,4 +81,30 @@ class HistoryItemModel with MultiSelectData {
         tagName: json['tag_name'] as String?,
         liveStatus: json['live_status'] as int?,
       );
+
+  Map<String, dynamic> toJson() => {
+    'title': title,
+    'long_title': longTitle,
+    'cover': cover,
+    'covers': covers,
+    'uri': uri,
+    'history': history.toJson(),
+    'videos': videos,
+    'author_name': authorName,
+    'author_face': authorFace,
+    'author_mid': authorMid,
+    'view_at': viewAt,
+    'progress': progress,
+    'badge': badge,
+    'show_title': showTitle,
+    'duration': duration,
+    'current': current,
+    'total': total,
+    'new_desc': newDesc,
+    'is_finish': isFinish,
+    'is_fav': isFav,
+    'kid': kid,
+    'tag_name': tagName,
+    'live_status': liveStatus,
+  };
 }

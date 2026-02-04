@@ -1,4 +1,3 @@
-import 'package:PiliMinus/models_new/history/data.dart';
 import 'package:PiliMinus/models_new/history/list.dart';
 import 'package:PiliMinus/pages/common/search/common_search_page.dart';
 import 'package:PiliMinus/pages/history/widgets/item.dart';
@@ -19,7 +18,7 @@ class _HistorySearchPageState
     extends
         CommonSearchPageState<
           HistorySearchPage,
-          HistoryData,
+          List<HistoryItemModel>,
           HistoryItemModel
         > {
   @override

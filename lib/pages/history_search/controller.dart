@@ -1,44 +1,47 @@
 import 'package:PiliMinus/common/widgets/dialog/dialog.dart';
 import 'package:PiliMinus/http/loading_state.dart';
-import 'package:PiliMinus/http/user.dart';
-import 'package:PiliMinus/models_new/history/data.dart';
 import 'package:PiliMinus/models_new/history/list.dart';
 import 'package:PiliMinus/pages/common/multi_select/base.dart';
 import 'package:PiliMinus/pages/common/search/common_search_controller.dart';
-import 'package:PiliMinus/utils/accounts.dart';
+import 'package:PiliMinus/services/local_history_service.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
 class HistorySearchController
-    extends CommonSearchController<HistoryData, HistoryItemModel>
+    extends CommonSearchController<List<HistoryItemModel>, HistoryItemModel>
     with CommonMultiSelectMixin<HistoryItemModel>, DeleteItemMixin {
-  @override
-  Future<LoadingState<HistoryData>> customGetData() => UserHttp.searchHistory(
-    pn: page,
-    keyword: editController.value.text,
-    account: account,
-  );
+
+  static const int _pageSize = 20;
 
   @override
-  List<HistoryItemModel>? getDataList(HistoryData response) {
-    return response.list;
+  Future<LoadingState<List<HistoryItemModel>>> customGetData() async {
+    // Simulate async behavior for consistency
+    await Future.delayed(Duration.zero);
+
+    final keyword = editController.value.text;
+    final offset = (page - 1) * _pageSize;
+
+    final items = LocalHistoryService.search(
+      keyword,
+      limit: _pageSize,
+      offset: offset,
+    );
+
+    return Success(items);
   }
 
-  final account = Accounts.history;
+  @override
+  List<HistoryItemModel>? getDataList(List<HistoryItemModel> response) {
+    return response;
+  }
 
   Future<void> onDelHistory(int index, kid, String business) async {
-    final res = await UserHttp.delHistory(
-      '${business}_$kid',
-      account: account,
-    );
-    if (res.isSuccess) {
-      loadingState
-        ..value.data!.removeAt(index)
-        ..refresh();
-      SmartDialog.showToast('已删除');
-    } else {
-      res.toast();
-    }
+    final key = '${business}_$kid';
+    await LocalHistoryService.delete(key);
+    loadingState
+      ..value.data!.removeAt(index)
+      ..refresh();
+    SmartDialog.showToast('已删除');
   }
 
   @override
@@ -48,20 +51,14 @@ class HistorySearchController
       content: '确认删除所选历史记录吗？',
       title: '提示',
       onConfirm: () async {
-        SmartDialog.showLoading(msg: '请求中');
+        SmartDialog.showLoading(msg: '删除中');
         final removeList = allChecked.toSet();
-        final response = await UserHttp.delHistory(
-          removeList
-              .map((item) => '${item.history.business!}_${item.kid!}')
-              .join(','),
-          account: account,
-        );
-        if (response.isSuccess) {
-          afterDelete(removeList);
-          SmartDialog.showToast('已删除');
-        } else {
-          response.toast();
-        }
+        final keys = removeList
+            .map((item) => '${item.history.business}_${item.history.oid}')
+            .toList();
+        await LocalHistoryService.deleteMultiple(keys);
+        afterDelete(removeList);
+        SmartDialog.showToast('已删除');
         SmartDialog.dismiss();
       },
     );

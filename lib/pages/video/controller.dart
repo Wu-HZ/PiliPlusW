@@ -1140,6 +1140,33 @@ class VideoDetailController extends GetxController
     Volume? volume,
   }) async {
     final onlyPlayAudio = plPlayerController.onlyPlayAudio.value;
+
+    // Get video metadata for local history
+    String? title;
+    String? videoCover;
+    String? authorName;
+    int? authorMid;
+    String? authorFace;
+    try {
+      if (isUgc) {
+        final ugcCtr = Get.find<UgcIntroController>(tag: heroTag);
+        final videoDetail = ugcCtr.videoDetail.value;
+        title = videoDetail.title;
+        videoCover = videoDetail.pic;
+        authorName = videoDetail.owner?.name;
+        authorMid = videoDetail.owner?.mid;
+        authorFace = videoDetail.owner?.face;
+      } else {
+        final pgcCtr = Get.find<PgcIntroController>(tag: heroTag);
+        final pgcItem = pgcCtr.pgcItem;
+        title = pgcItem.title;
+        videoCover = pgcItem.cover;
+      }
+    } catch (_) {
+      // Use fallback values
+      videoCover = cover.value;
+    }
+
     await plPlayerController.setDataSource(
       DataSource(
         videoSource: isFileSource
@@ -1183,6 +1210,12 @@ class VideoDetailController extends GetxController
       dirPath: isFileSource ? args['dirPath'] : null,
       typeTag: isFileSource ? entry.typeTag : null,
       mediaType: isFileSource ? entry.mediaType : null,
+      // Local history metadata
+      title: title,
+      cover: videoCover,
+      authorName: authorName,
+      authorMid: authorMid,
+      authorFace: authorFace,
     );
 
     if (isClosed) return;
