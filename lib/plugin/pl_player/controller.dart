@@ -240,7 +240,8 @@ class PlPlayerController {
   Future<void> exitDesktopPip() {
     isDesktopPip = false;
     return Future.wait([
-      windowManager.setTitleBarStyle(TitleBarStyle.normal),
+      windowManager.setTitleBarStyle(
+          Pref.showWindowTitleBar ? TitleBarStyle.normal : TitleBarStyle.hidden),
       windowManager.setMinimumSize(const Size(400, 300)),
       windowManager.setBounds(_lastWindowBounds),
       setAlwaysOnTop(false),
