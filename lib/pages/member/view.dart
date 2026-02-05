@@ -16,7 +16,6 @@ import 'package:PiliMinus/pages/member_contribute/view.dart';
 import 'package:PiliMinus/pages/member_dynamics/view.dart';
 import 'package:PiliMinus/pages/member_favorite/view.dart';
 import 'package:PiliMinus/pages/member_home/view.dart';
-import 'package:PiliMinus/pages/member_pgc/view.dart';
 import 'package:PiliMinus/pages/member_shop/view.dart';
 import 'package:PiliMinus/utils/utils.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
@@ -297,10 +296,6 @@ class _MemberPageState extends State<MemberPage> {
             initialIndex: _userController.contributeInitialIndex.value,
             mid: _mid,
           ),
-        ),
-        'bangumi' => MemberBangumi(
-          heroTag: _heroTag,
-          mid: _mid,
         ),
         'favorite' => MemberFavorite(
           heroTag: _heroTag,

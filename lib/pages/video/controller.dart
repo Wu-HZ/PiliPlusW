@@ -55,6 +55,7 @@ import 'package:PiliMinus/plugin/pl_player/models/data_source.dart';
 import 'package:PiliMinus/plugin/pl_player/models/heart_beat_type.dart';
 import 'package:PiliMinus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliMinus/services/download/download_service.dart';
+import 'package:PiliMinus/services/local_favorites_service.dart';
 import 'package:PiliMinus/services/local_watch_later_service.dart';
 import 'package:PiliMinus/utils/accounts.dart';
 import 'package:PiliMinus/utils/duration_utils.dart';
@@ -395,6 +396,48 @@ class VideoDetailController extends GetxController
         }
       }
       return;
+    }
+
+    // Use local storage for favorites
+    if (sourceType == SourceType.fav) {
+      final mediaId = args['mediaId'] as int?;
+      if (mediaId != null) {
+        final items = LocalFavoritesService.getAsMediaList(
+          folderId: mediaId,
+          oid: isReverse
+              ? null
+              : mediaList.isEmpty
+                  ? args['isContinuePlaying'] == true
+                      ? args['oid']
+                      : null
+                  : isLoadPrevious
+                      ? mediaList.first.aid
+                      : mediaList.last.aid,
+          ps: 20,
+          desc: _mediaDesc,
+          isLoadPrevious: isLoadPrevious,
+        );
+        if (items.isNotEmpty) {
+          if (isReverse) {
+            mediaList.value = items;
+            for (final item in mediaList) {
+              if (item.cid != null) {
+                try {
+                  Get.find<UgcIntroController>(
+                    tag: heroTag,
+                  ).onChangeEpisode(item);
+                } catch (_) {}
+                break;
+              }
+            }
+          } else if (isLoadPrevious) {
+            mediaList.insertAll(0, items);
+          } else {
+            mediaList.addAll(items);
+          }
+        }
+        return;
+      }
     }
 
     final res = await UserHttp.getMediaList(

@@ -4,8 +4,6 @@ import 'package:PiliMinus/pages/hot/controller.dart';
 import 'package:PiliMinus/pages/hot/view.dart';
 import 'package:PiliMinus/pages/live/controller.dart';
 import 'package:PiliMinus/pages/live/view.dart';
-import 'package:PiliMinus/pages/pgc/controller.dart';
-import 'package:PiliMinus/pages/pgc/view.dart';
 import 'package:PiliMinus/pages/rank/controller.dart';
 import 'package:PiliMinus/pages/rank/view.dart';
 import 'package:PiliMinus/pages/rcmd/controller.dart';
@@ -18,8 +16,6 @@ enum HomeTabType implements EnumWithLabel {
   rcmd('推荐'),
   hot('热门'),
   rank('分区'),
-  bangumi('番剧'),
-  cinema('影视')
   ;
 
   @override
@@ -31,8 +27,6 @@ enum HomeTabType implements EnumWithLabel {
     HomeTabType.rcmd => Get.find<RcmdController>,
     HomeTabType.hot => Get.find<HotController>,
     HomeTabType.rank => Get.find<RankController>,
-    HomeTabType.bangumi ||
-    HomeTabType.cinema => () => Get.find<PgcController>(tag: name),
   };
 
   Widget get page => switch (this) {
@@ -40,7 +34,5 @@ enum HomeTabType implements EnumWithLabel {
     HomeTabType.rcmd => const RcmdPage(),
     HomeTabType.hot => const HotPage(),
     HomeTabType.rank => const RankPage(),
-    HomeTabType.bangumi => const PgcPage(tabType: HomeTabType.bangumi),
-    HomeTabType.cinema => const PgcPage(tabType: HomeTabType.cinema),
   };
 }

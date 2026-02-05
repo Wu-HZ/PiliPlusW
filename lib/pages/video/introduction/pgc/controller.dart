@@ -47,6 +47,24 @@ class PgcIntroController extends CommonIntroController {
   (Object, int) get getFavRidType => (epId!, 24);
 
   @override
+  int get videoId => epId ?? 0;
+
+  @override
+  String? get videoBvid => bvid;
+
+  @override
+  String? get videoTitle => pgcItem.title;
+
+  @override
+  String? get videoCover => pgcItem.cover;
+
+  @override
+  int? get videoDuration => null;
+
+  @override
+  int? get videoCid => cid.value;
+
+  @override
   StatDetail? getStat() => pgcItem.stat;
 
   late final RxBool isFollowed = false.obs;

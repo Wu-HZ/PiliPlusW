@@ -1,17 +1,12 @@
-import 'package:PiliMinus/common/widgets/flutter/page/tabs.dart';
 import 'package:PiliMinus/common/widgets/flutter/selectable_text/text.dart';
-import 'package:PiliMinus/common/widgets/keep_alive_wrapper.dart';
-import 'package:PiliMinus/common/widgets/scroll_physics.dart';
 import 'package:PiliMinus/common/widgets/stat/stat.dart';
 import 'package:PiliMinus/models/common/stat_type.dart';
 import 'package:PiliMinus/models_new/pgc/pgc_info_model/result.dart';
 import 'package:PiliMinus/models_new/video/video_tag/data.dart';
 import 'package:PiliMinus/pages/common/slide/common_slide_page.dart';
-import 'package:PiliMinus/pages/pgc_review/view.dart';
 import 'package:PiliMinus/pages/search/widgets/search_text.dart';
-import 'package:PiliMinus/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliMinus/utils/utils.dart';
-import 'package:flutter/material.dart' hide TabBarView;
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class PgcIntroPanel extends CommonSlidePage {
@@ -30,20 +25,17 @@ class PgcIntroPanel extends CommonSlidePage {
 }
 
 class _IntroDetailState extends State<PgcIntroPanel>
-    with TickerProviderStateMixin, CommonSlideMixin {
+    with SingleTickerProviderStateMixin, CommonSlideMixin {
   late final ScrollController _controller;
-  late final TabController _tabController;
 
   @override
   void initState() {
     super.initState();
     _controller = ScrollController();
-    _tabController = TabController(length: 2, vsync: this);
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -56,26 +48,14 @@ class _IntroDetailState extends State<PgcIntroPanel>
         children: [
           Row(
             children: [
-              Expanded(
-                child: TabBar(
-                  controller: _tabController,
-                  dividerHeight: 0,
-                  isScrollable: true,
-                  tabAlignment: TabAlignment.start,
-                  dividerColor: Colors.transparent,
-                  tabs: const [
-                    Tab(text: '详情'),
-                    Tab(text: '点评'),
-                  ],
-                  onTap: (index) {
-                    if (!_tabController.indexIsChanging) {
-                      if (index == 0) {
-                        _controller.animToTop();
-                      }
-                    }
-                  },
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Text(
+                  '详情',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                 ),
               ),
+              const Spacer(),
               IconButton(
                 tooltip: '关闭',
                 icon: const Icon(Icons.close, size: 20),
@@ -94,23 +74,7 @@ class _IntroDetailState extends State<PgcIntroPanel>
 
   @override
   Widget buildList(ThemeData theme) {
-    return TabBarView<TabBarDragGestureRecognizer>(
-      controller: _tabController,
-      physics: const CustomTabBarViewScrollPhysics(),
-      horizontalDragGestureRecognizer: TabBarDragGestureRecognizer(
-        isDxAllowed: (double dx) => enableSlide
-            ? dx > CommonSlideMixin.offset &&
-                  dx < maxWidth - CommonSlideMixin.offset
-            : true,
-      ),
-      children: [
-        KeepAliveWrapper(builder: (context) => _buildInfo(theme)),
-        PgcReviewPage(
-          name: widget.item.title!,
-          mediaId: widget.item.mediaId,
-        ),
-      ],
-    );
+    return _buildInfo(theme);
   }
 
   Widget _buildInfo(ThemeData theme) {

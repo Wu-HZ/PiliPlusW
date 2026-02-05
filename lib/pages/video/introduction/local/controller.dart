@@ -33,6 +33,24 @@ class LocalIntroController extends CommonIntroController {
   (Object, int) get getFavRidType => throw UnimplementedError();
 
   @override
+  int get videoId => 0;
+
+  @override
+  String? get videoBvid => null;
+
+  @override
+  String? get videoTitle => videoDetail.value.title;
+
+  @override
+  String? get videoCover => null;
+
+  @override
+  int? get videoDuration => null;
+
+  @override
+  int? get videoCid => null;
+
+  @override
   StatDetail? getStat() => null;
 
   @override

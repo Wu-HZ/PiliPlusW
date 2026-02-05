@@ -1,4 +1,3 @@
-import 'package:PiliMinus/http/fav.dart';
 import 'package:PiliMinus/http/loading_state.dart';
 import 'package:PiliMinus/models_new/fav/fav_detail/media.dart';
 import 'package:PiliMinus/pages/fav_detail/controller.dart';
@@ -23,7 +22,7 @@ class _FavSortPageState extends State<FavSortPage> {
   late List<FavDetailItemModel> sortList = List<FavDetailItemModel>.from(
     _favDetailController.loadingState.value.data!,
   );
-  List<String> sort = <String>[];
+  bool _hasChanges = false;
 
   void onLoadMore() {
     if (_favDetailController.isEnd) {
@@ -51,22 +50,15 @@ class _FavSortPageState extends State<FavSortPage> {
         title: Text('排序: ${_favDetailController.folderInfo.value.title}'),
         actions: [
           TextButton(
-            onPressed: () async {
-              if (sort.isEmpty) {
+            onPressed: () {
+              if (!_hasChanges) {
                 Get.back();
                 return;
               }
-              final res = await FavHttp.sortFav(
-                mediaId: _favDetailController.mediaId,
-                sort: sort.join(','),
-              );
-              if (res.isSuccess) {
-                SmartDialog.showToast('排序完成');
-                _favDetailController.loadingState.value = Success(sortList);
-                Get.back();
-              } else {
-                res.toast();
-              }
+              // Update local state (UI-only sorting)
+              _favDetailController.loadingState.value = Success(sortList);
+              SmartDialog.showToast('排序完成');
+              Get.back();
             },
             child: const Text('完成'),
           ),
@@ -82,16 +74,9 @@ class _FavSortPageState extends State<FavSortPage> {
       newIndex -= 1;
     }
 
-    final oldItem = sortList[oldIndex];
-    final newItem = sortList.elementAtOrNull(
-      oldIndex > newIndex ? newIndex - 1 : newIndex,
-    );
-    sort.add(
-      '${newItem == null ? '0:0' : '${newItem.id}:${newItem.type}'}:${oldItem.id}:${oldItem.type}',
-    );
-
     final tabsItem = sortList.removeAt(oldIndex);
     sortList.insert(newIndex, tabsItem);
+    _hasChanges = true;
 
     setState(() {});
   }

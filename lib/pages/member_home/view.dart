@@ -15,7 +15,6 @@ import 'package:PiliMinus/pages/member_contribute/controller.dart';
 import 'package:PiliMinus/pages/member_home/widgets/fav_item.dart';
 import 'package:PiliMinus/pages/member_home/widgets/video_card_v_member_home.dart';
 import 'package:PiliMinus/pages/member_like_arc/view.dart';
-import 'package:PiliMinus/pages/member_pgc/widgets/pgc_card_v_member_pgc.dart';
 import 'package:PiliMinus/utils/extension/context_ext.dart';
 import 'package:PiliMinus/utils/grid.dart';
 import 'package:flutter/material.dart';
@@ -57,14 +56,6 @@ class _MemberHomeState extends State<MemberHome>
     maxCrossAxisExtent: Grid.smallCardWidth * 2,
     childAspectRatio: StyleString.aspectRatio * 2.6,
     minHeight: MediaQuery.textScalerOf(context).scale(90),
-  );
-
-  late final gridDelegatePgc = SliverGridDelegateWithExtentAndRatio(
-    mainAxisSpacing: StyleString.cardSpace,
-    crossAxisSpacing: StyleString.cardSpace,
-    maxCrossAxisExtent: Grid.smallCardWidth * 0.6,
-    childAspectRatio: 0.75,
-    mainAxisExtent: MediaQuery.textScalerOf(context).scale(52),
   );
 
   Widget _buildBody(LoadingState<SpaceData?> loadingState) {
@@ -222,32 +213,6 @@ class _MemberHomeState extends State<MemberHome>
                         return MemberComicItem(item: res.comic!.item![index]);
                       },
                       itemCount: isVertical ? 1 : min(3, res.comic!.count!),
-                    ),
-                  ],
-                  if (res.season?.item?.isNotEmpty == true) ...[
-                    _header(
-                      color,
-                      title: '追番',
-                      param: 'bangumi',
-                      count: res.season!.count!,
-                      visible: isOwner ? setting.bangumi == 1 : null,
-                    ),
-                    SliverPadding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: StyleString.safeSpace,
-                      ),
-                      sliver: SliverGrid.builder(
-                        gridDelegate: gridDelegatePgc,
-                        itemBuilder: (context, index) {
-                          return PgcCardVMemberPgc(
-                            item: res.season!.item![index],
-                          );
-                        },
-                        itemCount: min(
-                          isVertical ? 3 : 6,
-                          res.season!.item!.length,
-                        ),
-                      ),
                     ),
                   ],
                   SliverToBoxAdapter(

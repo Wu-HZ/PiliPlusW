@@ -293,6 +293,24 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
   (Object, int) get getFavRidType => (IdUtils.bv2av(bvid), 2);
 
   @override
+  int get videoId => IdUtils.bv2av(bvid);
+
+  @override
+  String? get videoBvid => bvid;
+
+  @override
+  String? get videoTitle => videoDetail.value.title;
+
+  @override
+  String? get videoCover => videoDetail.value.pic;
+
+  @override
+  int? get videoDuration => videoDetail.value.duration;
+
+  @override
+  int? get videoCid => cid.value;
+
+  @override
   StatDetail? getStat() => videoDetail.value.stat;
 
   // 分享视频

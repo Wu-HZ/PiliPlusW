@@ -688,6 +688,24 @@ class AudioController extends GetxController
   (Object, int) get getFavRidType => (oid, isVideo ? 2 : 12);
 
   @override
+  int get videoId => oid.toInt();
+
+  @override
+  String? get videoBvid => null;
+
+  @override
+  String? get videoTitle => audioItem.value?.arc.title;
+
+  @override
+  String? get videoCover => audioItem.value?.arc.cover;
+
+  @override
+  int? get videoDuration => audioItem.value?.arc.duration.toInt();
+
+  @override
+  int? get videoCid => null; // Audio doesn't have cid
+
+  @override
   void updateFavCount(int count) {
     try {
       audioItem.value!.stat

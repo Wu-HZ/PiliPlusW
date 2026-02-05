@@ -1,6 +1,5 @@
 enum RankType {
   all('全站', rid: 0),
-  anime('番剧', seasonType: 1),
   guochuang('国创', seasonType: 4),
   douga('动画', rid: 1005),
   music('音乐', rid: 1003),

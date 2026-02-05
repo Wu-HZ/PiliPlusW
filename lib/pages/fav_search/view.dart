@@ -1,12 +1,9 @@
-import 'package:PiliMinus/models/common/fav_order_type.dart';
 import 'package:PiliMinus/models_new/fav/fav_detail/data.dart';
 import 'package:PiliMinus/models_new/fav/fav_detail/media.dart';
 import 'package:PiliMinus/pages/common/search/common_search_page.dart';
 import 'package:PiliMinus/pages/fav_detail/widget/fav_video_card.dart';
 import 'package:PiliMinus/pages/fav_search/controller.dart';
-import 'package:PiliMinus/utils/accounts.dart';
 import 'package:PiliMinus/utils/grid.dart';
-import 'package:PiliMinus/utils/request_utils.dart';
 import 'package:PiliMinus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -32,61 +29,10 @@ class _FavSearchPageState
   );
 
   @override
-  List<Widget>? get multiSelectActions {
-    final btnStyle = TextButton.styleFrom(visualDensity: .compact);
-    final textStyle = TextStyle(
-      color: ColorScheme.of(context).onSurfaceVariant,
-    );
-    return [
-      TextButton(
-        style: btnStyle,
-        onPressed: () => RequestUtils.onCopyOrMove<FavDetailItemModel>(
-          context: context,
-          isCopy: true,
-          ctr: controller,
-          mediaId: controller.mediaId,
-          mid: Accounts.main.mid,
-        ),
-        child: Text('复制', style: textStyle),
-      ),
-      TextButton(
-        style: btnStyle,
-        onPressed: () => RequestUtils.onCopyOrMove<FavDetailItemModel>(
-          context: context,
-          isCopy: false,
-          ctr: controller,
-          mediaId: controller.mediaId,
-          mid: Accounts.main.mid,
-        ),
-        child: Text('移动', style: textStyle),
-      ),
-    ];
-  }
+  List<Widget>? get multiSelectActions => null;
 
   @override
-  List<Widget>? get extraActions => [
-    Obx(
-      () {
-        return PopupMenuButton<FavOrderType>(
-          icon: const Icon(Icons.sort),
-          requestFocus: false,
-          initialValue: controller.order.value,
-          tooltip: '排序方式',
-          onSelected: (value) => controller
-            ..order.value = value
-            ..onReload(),
-          itemBuilder: (context) => FavOrderType.values
-              .map(
-                (e) => PopupMenuItem(
-                  value: e,
-                  child: Text(e.label),
-                ),
-              )
-              .toList(),
-        );
-      },
-    ),
-  ];
+  List<Widget>? get extraActions => null;
 
   late final gridDelegate = Grid.videoCardHDelegate(context, minHeight: 110);
 

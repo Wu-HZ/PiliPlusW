@@ -1,4 +1,3 @@
-import 'package:PiliMinus/http/fav.dart';
 import 'package:PiliMinus/http/loading_state.dart';
 import 'package:PiliMinus/http/user.dart';
 import 'package:PiliMinus/models/common/account_type.dart';
@@ -8,6 +7,7 @@ import 'package:PiliMinus/models/user/stat.dart';
 import 'package:PiliMinus/models_new/fav/fav_folder/data.dart';
 import 'package:PiliMinus/pages/common/common_data_controller.dart';
 import 'package:PiliMinus/services/account_service.dart';
+import 'package:PiliMinus/services/local_favorites_service.dart';
 import 'package:PiliMinus/utils/accounts.dart';
 import 'package:PiliMinus/utils/accounts/account.dart';
 import 'package:PiliMinus/utils/login_utils.dart';
@@ -74,10 +74,12 @@ class MineController extends CommonDataController<FavFolderData, FavFolderData>
   @override
   void onInit() {
     super.onInit();
+    // Always query local favorites regardless of login status
+    queryData();
+
     UserInfoData? userInfoCache = Pref.userInfoCache;
     if (userInfoCache != null) {
       userInfo.value = userInfoCache;
-      queryData();
       queryUserInfo();
     }
   }
@@ -131,12 +133,10 @@ class MineController extends CommonDataController<FavFolderData, FavFolderData>
   }
 
   @override
-  Future<LoadingState<FavFolderData>> customGetData() {
-    return FavHttp.userfavFolder(
-      pn: 1,
-      ps: 20,
-      mid: Accounts.main.mid,
-    );
+  Future<LoadingState<FavFolderData>> customGetData() async {
+    // Use local favorites storage
+    await LocalFavoritesService.ensureDefaultFolder();
+    return Success(LocalFavoritesService.getFolderData());
   }
 
   static void onChangeAnonymity() {
@@ -277,21 +277,21 @@ class MineController extends CommonDataController<FavFolderData, FavFolderData>
 
   @override
   Future<void> onRefresh() {
-    if (!accountService.isLogin.value) {
-      return Future.syncValue(null);
+    if (accountService.isLogin.value) {
+      queryUserInfo();
     }
-    queryUserInfo();
+    // Always refresh local favorites regardless of login status
     return super.onRefresh();
   }
 
   @override
   void onChangeAccount(bool isLogin) {
     if (isLogin) {
-      onRefresh();
+      queryUserInfo();
     } else {
       userInfo.value = UserInfoData();
       userStat.value = const UserStat();
-      loadingState.value = LoadingState.loading();
+      // Don't clear favorites - they are stored locally
     }
   }
 }

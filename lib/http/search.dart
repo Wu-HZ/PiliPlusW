@@ -107,9 +107,6 @@ abstract final class SearchHttp {
             case SearchType.bili_user:
               data = SearchUserData.fromJson(dataData);
               break;
-            case SearchType.media_bangumi || SearchType.media_ft:
-              data = SearchPgcData.fromJson(dataData);
-              break;
             case SearchType.article:
               data = SearchArticleData.fromJson(dataData);
               break;

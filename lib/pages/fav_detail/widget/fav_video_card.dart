@@ -36,7 +36,8 @@ class FavVideoCardH extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isOwner = !isSort && ctr!.isOwner;
+    // For local storage, all folders are owned by the user
+    const isOwner = true;
     late final enableMultiSelect = ctr?.enableMultiSelect.value ?? false;
     final theme = Theme.of(context);
 

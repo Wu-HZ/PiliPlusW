@@ -43,7 +43,6 @@ class HistoryController
     if (type == null) {
       tabs.value = [
         HistoryTab(type: 'archive', name: '视频'),
-        HistoryTab(type: 'pgc', name: '番剧'),
         HistoryTab(type: 'live', name: '直播'),
       ];
       tabController = TabController(

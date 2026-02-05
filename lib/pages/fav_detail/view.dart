@@ -1,19 +1,16 @@
-import 'package:PiliMinus/common/widgets/button/icon_button.dart';
 import 'package:PiliMinus/common/widgets/dialog/dialog.dart';
 import 'package:PiliMinus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliMinus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliMinus/common/widgets/loading_widget/http_error.dart';
-import 'package:PiliMinus/http/fav.dart';
 import 'package:PiliMinus/http/loading_state.dart';
-import 'package:PiliMinus/models/common/fav_order_type.dart';
 import 'package:PiliMinus/models_new/fav/fav_detail/media.dart';
 import 'package:PiliMinus/models_new/fav/fav_folder/list.dart';
 import 'package:PiliMinus/pages/dynamics_repost/view.dart';
 import 'package:PiliMinus/pages/fav_detail/controller.dart';
 import 'package:PiliMinus/pages/fav_detail/widget/fav_video_card.dart';
+import 'package:PiliMinus/services/local_favorites_service.dart';
 import 'package:PiliMinus/utils/fav_utils.dart';
 import 'package:PiliMinus/utils/grid.dart';
-import 'package:PiliMinus/utils/request_utils.dart';
 import 'package:PiliMinus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -183,7 +180,7 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
               'mediaId': int.parse(mediaId),
               'title': folderInfo.title,
               'count': folderInfo.mediaCount,
-              'isOwner': _favDetailController.isOwner,
+              'isOwner': true,
             },
           );
         },
@@ -202,55 +199,27 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
                 icon: const Icon(Icons.share),
               );
       }),
-      Obx(
-        () {
-          return PopupMenuButton<FavOrderType>(
-            icon: const Icon(Icons.sort),
-            initialValue: _favDetailController.order.value,
-            tooltip: '排序方式',
-            onSelected: (value) => _favDetailController
-              ..order.value = value
-              ..onReload(),
-            itemBuilder: (context) => FavOrderType.values
-                .map(
-                  (e) => PopupMenuItem(
-                    value: e,
-                    child: Text(e.label),
-                  ),
-                )
-                .toList(),
-          );
-        },
-      ),
       PopupMenuButton(
         icon: const Icon(Icons.more_vert),
         itemBuilder: (context) {
-          final isOwner = _favDetailController.isOwner;
           final folderInfo = _favDetailController.folderInfo.value;
-          return [
-            if (isOwner) ...[
-              PopupMenuItem(
-                onTap: _favDetailController.onSort,
-                child: const Text('排序'),
-              ),
-              PopupMenuItem(
-                onTap: () =>
-                    Get.toNamed(
-                      '/createFav',
-                      parameters: {'mediaId': mediaId},
-                    )?.then((res) {
-                      if (res is FavFolderInfo) {
-                        _favDetailController.folderInfo.value = res;
-                      }
-                    }),
-                child: const Text('编辑信息'),
-              ),
-            ] else
-              PopupMenuItem(
-                onTap: () =>
-                    _favDetailController.onFav(folderInfo.favState == 1),
-                child: Text('${folderInfo.favState == 1 ? '取消' : ''}收藏'),
-              ),
+          return <PopupMenuEntry>[
+            PopupMenuItem(
+              onTap: _favDetailController.onSort,
+              child: const Text('排序'),
+            ),
+            PopupMenuItem(
+              onTap: () =>
+                  Get.toNamed(
+                    '/createFav',
+                    parameters: {'mediaId': mediaId},
+                  )?.then((res) {
+                    if (res is FavFolderInfo) {
+                      _favDetailController.folderInfo.value = res;
+                    }
+                  }),
+              child: const Text('编辑信息'),
+            ),
             if (FavUtils.isPublicFav(folderInfo.attr))
               PopupMenuItem(
                 onTap: () => showModalBottomSheet(
@@ -267,35 +236,25 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
                 ),
                 child: const Text('分享至动态'),
               ),
-            if (isOwner) ...<PopupMenuEntry>[
+            if (!FavUtils.isDefaultFav(folderInfo.attr)) ...<PopupMenuEntry>[
+              const PopupMenuDivider(height: 12),
               PopupMenuItem(
-                onTap: _favDetailController.cleanFav,
-                child: const Text('清除失效内容'),
-              ),
-              if (!FavUtils.isDefaultFav(folderInfo.attr)) ...[
-                const PopupMenuDivider(height: 12),
-                PopupMenuItem(
-                  onTap: () => showConfirmDialog(
-                    context: context,
-                    title: '确定删除该收藏夹?',
-                    onConfirm: () =>
-                        FavHttp.deleteFolder(mediaIds: mediaId).then((res) {
-                          if (res.isSuccess) {
-                            SmartDialog.showToast('删除成功');
-                            Get.back(result: true);
-                          } else {
-                            res.toast();
-                          }
-                        }),
-                  ),
-                  child: Text(
-                    '删除',
-                    style: TextStyle(
-                      color: theme.colorScheme.error,
-                    ),
+                onTap: () => showConfirmDialog(
+                  context: context,
+                  title: '确定删除该收藏夹?',
+                  onConfirm: () async {
+                    await LocalFavoritesService.deleteFolder(int.parse(mediaId));
+                    SmartDialog.showToast('删除成功');
+                    Get.back(result: true);
+                  },
+                ),
+                child: Text(
+                  '删除',
+                  style: TextStyle(
+                    color: theme.colorScheme.error,
                   ),
                 ),
-              ],
+              ),
             ],
           ];
         },
@@ -306,34 +265,11 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
 
   List<Widget> _selectActions(ThemeData theme) {
     final btnStyle = TextButton.styleFrom(visualDensity: .compact);
-    final textStyle = TextStyle(color: theme.colorScheme.onSurfaceVariant);
     return [
       TextButton(
         style: btnStyle,
         onPressed: () => _favDetailController.handleSelect(checked: true),
         child: const Text('全选'),
-      ),
-      TextButton(
-        style: btnStyle,
-        onPressed: () => RequestUtils.onCopyOrMove<FavDetailItemModel>(
-          context: context,
-          isCopy: true,
-          ctr: _favDetailController,
-          mediaId: _favDetailController.mediaId,
-          mid: _favDetailController.account.mid,
-        ),
-        child: Text('复制', style: textStyle),
-      ),
-      TextButton(
-        style: btnStyle,
-        onPressed: () => RequestUtils.onCopyOrMove<FavDetailItemModel>(
-          context: context,
-          isCopy: false,
-          ctr: _favDetailController,
-          mediaId: _favDetailController.mediaId,
-          mid: _favDetailController.account.mid,
-        ),
-        child: Text('移动', style: textStyle),
       ),
       TextButton(
         style: btnStyle,
@@ -370,45 +306,13 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
                 spacing: 12,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      Hero(
-                        tag: _favDetailController.heroTag,
-                        child: NetworkImgLayer(
-                          width: 176,
-                          height: 110,
-                          src: folderInfo.cover,
-                        ),
-                      ),
-                      Positioned(
-                        right: 6,
-                        top: 6,
-                        child: Obx(() {
-                          if (_favDetailController.isOwner ||
-                              _favDetailController.loadingState.value
-                                  is! Success) {
-                            return const SizedBox.shrink();
-                          }
-                          bool isFav = folderInfo.favState == 1;
-                          return iconButton(
-                            size: 28,
-                            iconSize: 18,
-                            tooltip: '${isFav ? '取消' : ''}收藏',
-                            onPressed: () => _favDetailController.onFav(isFav),
-                            icon: isFav
-                                ? const Icon(Icons.favorite)
-                                : const Icon(Icons.favorite_border),
-                            bgColor: isFav
-                                ? theme.colorScheme.secondaryContainer
-                                : theme.colorScheme.onInverseSurface,
-                            iconColor: isFav
-                                ? theme.colorScheme.onSecondaryContainer
-                                : theme.colorScheme.onSurfaceVariant,
-                          );
-                        }),
-                      ),
-                    ],
+                  Hero(
+                    tag: _favDetailController.heroTag,
+                    child: NetworkImgLayer(
+                      width: 176,
+                      height: 110,
+                      src: folderInfo.cover,
+                    ),
                   ),
                   if (folderInfo.title.isNotEmpty)
                     Expanded(
@@ -426,17 +330,18 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
                               ),
                             ),
                           ),
-                          GestureDetector(
-                            onTap: () => Get.toNamed(
-                              '/member?mid=${folderInfo.upper!.mid}',
-                            ),
-                            child: Text(
-                              folderInfo.upper!.name!,
-                              style: TextStyle(
-                                color: theme.colorScheme.primary,
+                          if (folderInfo.upper?.mid != null && folderInfo.upper?.name != null)
+                            GestureDetector(
+                              onTap: () => Get.toNamed(
+                                '/member?mid=${folderInfo.upper!.mid}',
+                              ),
+                              child: Text(
+                                folderInfo.upper!.name!,
+                                style: TextStyle(
+                                  color: theme.colorScheme.primary,
+                                ),
                               ),
                             ),
-                          ),
                           const SizedBox(height: 4),
                           if (folderInfo.intro?.isNotEmpty == true) ...[
                             Text(

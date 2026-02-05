@@ -1,7 +1,5 @@
 import 'package:PiliMinus/common/widgets/dialog/dialog.dart';
-import 'package:PiliMinus/http/fav.dart';
 import 'package:PiliMinus/http/loading_state.dart';
-import 'package:PiliMinus/models/common/fav_order_type.dart';
 import 'package:PiliMinus/models/common/video/source_type.dart';
 import 'package:PiliMinus/models_new/fav/fav_detail/data.dart';
 import 'package:PiliMinus/models_new/fav/fav_detail/media.dart';
@@ -10,7 +8,7 @@ import 'package:PiliMinus/pages/common/common_list_controller.dart';
 import 'package:PiliMinus/pages/common/multi_select/base.dart';
 import 'package:PiliMinus/pages/common/multi_select/multi_select_controller.dart';
 import 'package:PiliMinus/pages/fav_sort/view.dart';
-import 'package:PiliMinus/utils/accounts.dart';
+import 'package:PiliMinus/services/local_favorites_service.dart';
 import 'package:PiliMinus/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliMinus/utils/page_utils.dart';
 import 'package:PiliMinus/utils/storage.dart';
@@ -24,7 +22,6 @@ mixin BaseFavController
     on
         CommonListController<FavDetailData, FavDetailItemModel>,
         DeleteItemMixin<FavDetailData, FavDetailItemModel> {
-  bool get isOwner;
   int get mediaId;
 
   ValueChanged<int>? updateCount;
@@ -32,19 +29,15 @@ mixin BaseFavController
   void onViewFav(FavDetailItemModel item, int? index);
 
   Future<void> onCancelFav(int index, int id, int type) async {
-    final res = await FavHttp.favVideo(
-      resources: '$id:$type',
-      delIds: mediaId.toString(),
+    await LocalFavoritesService.removeFromFolder(
+      folderId: mediaId,
+      videoId: id,
     );
-    if (res.isSuccess) {
-      loadingState
-        ..value.data!.removeAt(index)
-        ..refresh();
-      updateCount?.call(1);
-      SmartDialog.showToast('取消收藏');
-    } else {
-      res.toast();
-    }
+    loadingState
+      ..value.data!.removeAt(index)
+      ..refresh();
+    updateCount?.call(1);
+    SmartDialog.showToast('取消收藏');
   }
 
   @override
@@ -55,19 +48,13 @@ mixin BaseFavController
       title: '提示',
       onConfirm: () async {
         final removeList = allChecked.toSet();
-        final res = await FavHttp.favVideo(
-          resources: removeList
-              .map((item) => '${item.id}:${item.type}')
-              .join(','),
-          delIds: mediaId.toString(),
+        await LocalFavoritesService.deleteMultipleFromFolder(
+          folderId: mediaId,
+          videoIds: removeList.map((item) => item.id!).toList(),
         );
-        if (res.isSuccess) {
-          updateCount?.call(removeList.length);
-          afterDelete(removeList);
-          SmartDialog.showToast('取消收藏');
-        } else {
-          res.toast();
-        }
+        updateCount?.call(removeList.length);
+        afterDelete(removeList);
+        SmartDialog.showToast('取消收藏');
       },
     );
   }
@@ -80,13 +67,6 @@ class FavDetailController
   late int mediaId;
   late String heroTag;
   final Rx<FavFolderInfo> folderInfo = FavFolderInfo().obs;
-  final Rx<bool?> _isOwner = Rx<bool?>(null);
-  final Rx<FavOrderType> order = FavOrderType.mtime.obs;
-
-  @override
-  bool get isOwner => _isOwner.value ?? false;
-
-  late final account = Accounts.main;
 
   late double dx = 0;
   late final RxBool isPlayAll = Pref.enablePlayAll.obs;
@@ -130,7 +110,6 @@ class FavDetailController
     if (isRefresh) {
       FavDetailData data = response.response;
       folderInfo.value = data.info!;
-      _isOwner.value = data.info?.mid == account.mid;
     }
     return false;
   }
@@ -142,13 +121,28 @@ class FavDetailController
         ..refresh();
 
   @override
-  Future<LoadingState<FavDetailData>> customGetData() =>
-      FavHttp.userFavFolderDetail(
-        pn: page,
-        ps: 20,
-        mediaId: mediaId,
-        order: order.value,
-      );
+  Future<LoadingState<FavDetailData>> customGetData() async {
+    // Get folder info
+    final folder = LocalFavoritesService.getFolder(mediaId);
+    if (folder == null) {
+      return Error('收藏夹不存在');
+    }
+
+    // Get videos in folder with pagination
+    final videos = LocalFavoritesService.getVideosInFolder(
+      folderId: mediaId,
+      page: page,
+      pageSize: 20,
+    );
+
+    final totalCount = LocalFavoritesService.getVideoCountInFolder(mediaId);
+
+    return Success(FavDetailData(
+      info: folder,
+      medias: videos,
+      hasMore: (page * 20) < totalCount,
+    ));
+  }
 
   void toViewPlayAll() {
     if (loadingState.value case Success(:final response)) {
@@ -169,33 +163,6 @@ class FavDetailController
   Future<void> onReload() {
     scrollController.jumpToTop();
     return super.onReload();
-  }
-
-  Future<void> onFav(bool isFav) async {
-    if (!account.isLogin) {
-      SmartDialog.showToast('账号未登录');
-      return;
-    }
-    final res = isFav
-        ? await FavHttp.unfavFavFolder(mediaId)
-        : await FavHttp.favFavFolder(mediaId);
-
-    if (res.isSuccess) {
-      folderInfo
-        ..value.favState = isFav ? 0 : 1
-        ..refresh();
-    }
-    res.toast();
-  }
-
-  Future<void> cleanFav() async {
-    final res = await FavHttp.cleanFav(mediaId: mediaId);
-    if (res.isSuccess) {
-      SmartDialog.showToast('清除成功');
-      Future.delayed(const Duration(milliseconds: 200), onReload);
-    } else {
-      res.toast();
-    }
   }
 
   void onSort() {
@@ -227,7 +194,6 @@ class FavDetailController
               'count': folder.mediaCount,
               'desc': true,
               if (index != null) 'isContinuePlaying': index != 0,
-              'isOwner': isOwner,
             }
           : null,
     );

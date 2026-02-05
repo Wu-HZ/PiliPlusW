@@ -30,11 +30,6 @@ class SearchAllData extends SearchNumData {
       for (final item in result) {
         if (item['data'] case List data) {
           switch (item['result_type']) {
-            case 'media_bangumi' || 'media_bangumi':
-              if (isRefresh) {
-                list!.addAll(data.map((e) => SearchPgcItemModel.fromJson(e)));
-              }
-              break;
             case 'bili_user':
               if (isRefresh) {
                 list!.addAll(data.map((e) => SearchUserItemModel.fromJson(e)));
