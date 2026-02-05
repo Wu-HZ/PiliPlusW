@@ -14,4 +14,10 @@ class Page {
     page: json['page'] as int?,
     duration: json['duration'] as int?,
   );
+
+  Map<String, dynamic> toJson() => {
+    'cid': cid,
+    'page': page,
+    'duration': duration,
+  };
 }

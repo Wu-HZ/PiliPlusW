@@ -30,6 +30,7 @@ import 'package:PiliMinus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliMinus/plugin/pl_player/models/video_fit_type.dart';
 import 'package:PiliMinus/plugin/pl_player/utils/fullscreen.dart';
 import 'package:PiliMinus/services/local_history_service.dart';
+import 'package:PiliMinus/services/local_watch_later_service.dart';
 import 'package:PiliMinus/services/service_locator.dart';
 import 'package:PiliMinus/utils/accounts.dart';
 import 'package:PiliMinus/utils/extension/box_ext.dart';
@@ -1829,6 +1830,12 @@ class PlPlayerController {
         business: business,
         seasonId: seasonId ?? _seasonId,
       );
+      // 同步更新稍后再看进度
+      await LocalWatchLaterService.updateProgress(
+        aid: aid ?? _aid,
+        bvid: bvid ?? _bvid,
+        progress: isComplete ? -1 : progress,
+      );
       return;
     }
     // 正常播放时，间隔5秒更新一次
@@ -1848,6 +1855,12 @@ class PlPlayerController {
         authorFace: _authorFace,
         business: business,
         seasonId: seasonId ?? _seasonId,
+      );
+      // 同步更新稍后再看进度
+      await LocalWatchLaterService.updateProgress(
+        aid: aid ?? _aid,
+        bvid: bvid ?? _bvid,
+        progress: progress,
       );
     }
   }

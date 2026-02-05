@@ -1,7 +1,7 @@
 import 'package:PiliMinus/common/constants.dart';
 import 'package:PiliMinus/common/widgets/button/icon_button.dart';
 import 'package:PiliMinus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliMinus/http/user.dart';
+import 'package:PiliMinus/services/local_watch_later_service.dart';
 import 'package:PiliMinus/utils/image_utils.dart';
 import 'package:PiliMinus/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
@@ -81,9 +81,20 @@ void imageSaveDialog({
                     iconButton(
                       iconSize: iconSize,
                       tooltip: '稍后再看',
-                      onPressed: () => {
-                        SmartDialog.dismiss(),
-                        UserHttp.toViewLater(aid: aid, bvid: bvid),
+                      onPressed: () async {
+                        SmartDialog.dismiss();
+                        await LocalWatchLaterService.addFromVideo(
+                          aid: aid is int ? aid : null,
+                          bvid: bvid,
+                          cid: null,
+                          title: title,
+                          cover: cover,
+                          duration: null,
+                          authorName: null,
+                          authorMid: null,
+                          authorFace: null,
+                        );
+                        SmartDialog.showToast('已添加到稍后再看');
                       },
                       icon: const Icon(Icons.watch_later_outlined),
                     ),

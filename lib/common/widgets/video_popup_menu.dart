@@ -1,4 +1,3 @@
-import 'package:PiliMinus/http/user.dart';
 import 'package:PiliMinus/http/video.dart';
 import 'package:PiliMinus/models/common/account_type.dart';
 import 'package:PiliMinus/models/home/rcmd/result.dart';
@@ -8,6 +7,7 @@ import 'package:PiliMinus/pages/mine/controller.dart';
 import 'package:PiliMinus/pages/search/widgets/search_text.dart';
 import 'package:PiliMinus/pages/video/ai_conclusion/view.dart';
 import 'package:PiliMinus/pages/video/introduction/ugc/controller.dart';
+import 'package:PiliMinus/services/local_watch_later_service.dart';
 import 'package:PiliMinus/utils/accounts.dart';
 import 'package:PiliMinus/utils/storage_pref.dart';
 import 'package:PiliMinus/utils/utils.dart';
@@ -64,7 +64,20 @@ class VideoPopupMenu extends StatelessWidget {
                   _VideoCustomAction(
                     '稍后再看',
                     const Icon(MdiIcons.clockTimeEightOutline, size: 16),
-                    () => UserHttp.toViewLater(bvid: videoItem.bvid),
+                    () async {
+                      await LocalWatchLaterService.addFromVideo(
+                        aid: null,
+                        bvid: videoItem.bvid,
+                        cid: videoItem.cid,
+                        title: videoItem.title,
+                        cover: videoItem.cover,
+                        duration: videoItem.duration,
+                        authorName: videoItem.owner.name,
+                        authorMid: videoItem.owner.mid,
+                        authorFace: null,
+                      );
+                      SmartDialog.showToast('已添加到稍后再看');
+                    },
                   ),
                   if (videoItem.cid != null && Pref.enableAi)
                     _VideoCustomAction(

@@ -24,4 +24,12 @@ class Bangumi {
         ? null
         : Season.fromJson(json['season'] as Map<String, dynamic>),
   );
+
+  Map<String, dynamic> toJson() => {
+    'ep_id': epId,
+    'title': title,
+    'long_title': longTitle,
+    'cover': cover,
+    'season': season?.toJson(),
+  };
 }

@@ -15,4 +15,9 @@ class Dimension {
     width: json['width'] as int?,
     height: json['height'] as int?,
   );
+
+  Map<String, dynamic> toJson() => {
+    'width': width,
+    'height': height,
+  };
 }

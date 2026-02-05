@@ -12,6 +12,7 @@ import 'package:PiliMinus/http/video.dart';
 import 'package:PiliMinus/models/dynamics/result.dart';
 import 'package:PiliMinus/pages/dynamics/controller.dart';
 import 'package:PiliMinus/pages/save_panel/view.dart';
+import 'package:PiliMinus/services/local_watch_later_service.dart';
 import 'package:PiliMinus/utils/accounts.dart';
 import 'package:PiliMinus/utils/date_utils.dart';
 import 'package:PiliMinus/utils/extension/context_ext.dart';
@@ -303,9 +304,24 @@ class AuthorPanel extends StatelessWidget {
               ),
               if (bvid != null)
                 ListTile(
-                  onTap: () {
+                  onTap: () async {
                     Get.back();
-                    UserHttp.toViewLater(bvid: bvid);
+                    final major = item.modules.moduleDynamic?.major;
+                    final archive = major?.archive;
+                    final ugcSeason = major?.ugcSeason;
+                    final author = item.modules.moduleAuthor;
+                    await LocalWatchLaterService.addFromVideo(
+                      aid: archive?.aid ?? ugcSeason?.aid,
+                      bvid: bvid,
+                      cid: null,
+                      title: archive?.title ?? ugcSeason?.title,
+                      cover: archive?.cover ?? ugcSeason?.cover,
+                      duration: null,
+                      authorName: author?.name,
+                      authorMid: author?.mid,
+                      authorFace: author?.face,
+                    );
+                    SmartDialog.showToast('已添加到稍后再看');
                   },
                   minLeadingWidth: 0,
                   leading: const Icon(Icons.watch_later_outlined, size: 19),

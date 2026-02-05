@@ -4,7 +4,7 @@ import 'package:PiliMinus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliMinus/common/widgets/progress_bar/video_progress_indicator.dart';
 import 'package:PiliMinus/common/widgets/select_mask.dart';
 import 'package:PiliMinus/http/search.dart';
-import 'package:PiliMinus/http/user.dart';
+import 'package:PiliMinus/services/local_watch_later_service.dart';
 import 'package:PiliMinus/models/common/badge_type.dart';
 import 'package:PiliMinus/models_new/history/list.dart';
 import 'package:PiliMinus/pages/common/multi_select/base.dart';
@@ -229,8 +229,20 @@ class HistoryItem extends StatelessWidget {
                       business != 'live' &&
                       !business.contains('article'))
                     PopupMenuItem(
-                      onTap: () =>
-                          UserHttp.toViewLater(bvid: item.history.bvid),
+                      onTap: () async {
+                        await LocalWatchLaterService.addFromVideo(
+                          aid: aid,
+                          bvid: bvid,
+                          cid: item.history.cid,
+                          title: item.title,
+                          cover: item.cover,
+                          duration: item.duration,
+                          authorName: item.authorName,
+                          authorMid: item.authorMid,
+                          authorFace: item.authorFace,
+                        );
+                        SmartDialog.showToast('已添加到稍后再看');
+                      },
                       height: 38,
                       child: const Row(
                         children: [

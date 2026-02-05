@@ -55,6 +55,7 @@ import 'package:PiliMinus/plugin/pl_player/models/data_source.dart';
 import 'package:PiliMinus/plugin/pl_player/models/heart_beat_type.dart';
 import 'package:PiliMinus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliMinus/services/download/download_service.dart';
+import 'package:PiliMinus/services/local_watch_later_service.dart';
 import 'package:PiliMinus/utils/accounts.dart';
 import 'package:PiliMinus/utils/duration_utils.dart';
 import 'package:PiliMinus/utils/extension/context_ext.dart';
@@ -436,12 +437,11 @@ class VideoDetailController extends GetxController
                 (sourceType == SourceType.fav && args['isOwner'] == true)
             ? (item, index) async {
                 if (sourceType == SourceType.watchLater) {
-                  final res = await UserHttp.toViewDel(
-                    aids: item.aid.toString(),
+                  await LocalWatchLaterService.delete(
+                    aid: item.aid,
+                    bvid: item.bvid,
                   );
-                  if (res.isSuccess) {
-                    mediaList.removeAt(index);
-                  }
+                  mediaList.removeAt(index);
                 } else {
                   final res = await FavHttp.favVideo(
                     resources: '${item.aid}:${item.type}',

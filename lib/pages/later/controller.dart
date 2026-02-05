@@ -1,16 +1,13 @@
 import 'package:PiliMinus/common/widgets/dialog/dialog.dart';
 import 'package:PiliMinus/http/loading_state.dart';
-import 'package:PiliMinus/http/user.dart';
 import 'package:PiliMinus/models/common/later_view_type.dart';
 import 'package:PiliMinus/models/common/video/source_type.dart';
 import 'package:PiliMinus/models_new/later/data.dart';
 import 'package:PiliMinus/models_new/later/list.dart';
-import 'package:PiliMinus/pages/common/common_list_controller.dart'
-    show CommonListController;
 import 'package:PiliMinus/pages/common/multi_select/base.dart';
 import 'package:PiliMinus/pages/common/multi_select/multi_select_controller.dart';
 import 'package:PiliMinus/pages/later/base_controller.dart';
-import 'package:PiliMinus/utils/accounts.dart';
+import 'package:PiliMinus/services/local_watch_later_service.dart';
 import 'package:PiliMinus/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliMinus/utils/page_utils.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +16,6 @@ import 'package:get/get.dart';
 
 mixin BaseLaterController
     on
-        CommonListController<LaterData, LaterItemModel>,
         CommonMultiSelectMixin<LaterItemModel>,
         DeleteItemMixin<LaterData, LaterItemModel> {
   ValueChanged<int>? updateCount;
@@ -33,13 +29,9 @@ mixin BaseLaterController
       onConfirm: () async {
         final removeList = allChecked.toSet();
         SmartDialog.showLoading(msg: '请求中');
-        final res = await UserHttp.toViewDel(
-          aids: removeList.map((item) => item.aid).join(','),
-        );
-        if (res.isSuccess) {
-          updateCount?.call(removeList.length);
-          afterDelete(removeList);
-        }
+        await LocalWatchLaterService.deleteMultiple(removeList);
+        updateCount?.call(removeList.length);
+        afterDelete(removeList);
         SmartDialog.dismiss();
       },
     );
@@ -49,7 +41,7 @@ mixin BaseLaterController
   void toViewDel(
     BuildContext context,
     int index,
-    int? aid,
+    LaterItemModel item,
   ) {
     showDialog(
       context: context,
@@ -67,13 +59,12 @@ mixin BaseLaterController
           TextButton(
             onPressed: () async {
               Get.back();
-              final res = await UserHttp.toViewDel(aids: aid.toString());
-              if (res.isSuccess) {
-                loadingState
-                  ..value.data!.removeAt(index)
-                  ..refresh();
-                updateCount?.call(1);
-              }
+              await LocalWatchLaterService.delete(
+                  aid: item.aid, bvid: item.bvid);
+              loadingState
+                ..value.data!.removeAt(index)
+                ..refresh();
+              updateCount?.call(1);
             },
             child: const Text('确认移除'),
           ),
@@ -88,11 +79,11 @@ class LaterController extends MultiSelectController<LaterData, LaterItemModel>
   LaterController(this.laterViewType);
   final LaterViewType laterViewType;
 
-  late final mid = Accounts.main.mid;
-
   final RxBool asc = false.obs;
 
   final LaterBaseController baseCtr = Get.put(LaterBaseController());
+
+  static const int _pageSize = 20;
 
   @override
   RxBool get enableMultiSelect => baseCtr.enableMultiSelect;
@@ -101,11 +92,20 @@ class LaterController extends MultiSelectController<LaterData, LaterItemModel>
   RxInt get rxCount => baseCtr.checkedCount;
 
   @override
-  Future<LoadingState<LaterData>> customGetData() => UserHttp.seeYouLater(
-    page: page,
-    viewed: laterViewType.type,
-    asc: asc.value,
-  );
+  Future<LoadingState<LaterData>> customGetData() async {
+    final offset = (page - 1) * _pageSize;
+    final items = LocalWatchLaterService.getAll(
+      viewType: laterViewType.type,
+      limit: _pageSize,
+      offset: offset,
+    );
+
+    final count = LocalWatchLaterService.getCount(
+      viewType: laterViewType.type,
+    );
+
+    return Success(LaterData(count: count, list: items));
+  }
 
   @override
   void onInit() {
@@ -129,8 +129,6 @@ class LaterController extends MultiSelectController<LaterData, LaterItemModel>
   // 一键清空
   void toViewClear(BuildContext context, [int? cleanType]) {
     String content = switch (cleanType) {
-      1 => '确定清空已失效视频吗？',
-      2 => '确定清空已看完视频吗？',
       _ => '确定清空稍后再看列表吗？',
     };
     showConfirmDialog(
@@ -138,20 +136,16 @@ class LaterController extends MultiSelectController<LaterData, LaterItemModel>
       title: '确认',
       content: content,
       onConfirm: () async {
-        final res = await UserHttp.toViewClear(cleanType);
-        if (res.isSuccess) {
-          onReload();
-          final restTypes = List<LaterViewType>.from(LaterViewType.values)
-            ..remove(laterViewType);
-          for (final item in restTypes) {
-            try {
-              Get.find<LaterController>(tag: item.type.toString()).onReload();
-            } catch (_) {}
-          }
-          SmartDialog.showToast('操作成功');
-        } else {
-          res.toast();
+        await LocalWatchLaterService.clear();
+        onReload();
+        final restTypes = List<LaterViewType>.from(LaterViewType.values)
+          ..remove(laterViewType);
+        for (final item in restTypes) {
+          try {
+            Get.find<LaterController>(tag: item.type.toString()).onReload();
+          } catch (_) {}
         }
+        SmartDialog.showToast('操作成功');
       },
     );
   }
@@ -174,7 +168,6 @@ class LaterController extends MultiSelectController<LaterData, LaterItemModel>
               'sourceType': SourceType.watchLater,
               'count': baseCtr.counts[LaterViewType.all.index],
               'favTitle': '稍后再看',
-              'mediaId': mid,
               'desc': asc.value,
             },
           );

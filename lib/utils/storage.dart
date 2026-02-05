@@ -21,6 +21,7 @@ abstract final class GStorage {
   static late final Box<dynamic> video;
   static late final Box<int> watchProgress;
   static late final Box<dynamic> watchHistory;
+  static late final Box<dynamic> watchLater;
 
   static Future<void> init() async {
     await Hive.initFlutter(path.join(appSupportDirPath, 'hive'));
@@ -65,6 +66,12 @@ abstract final class GStorage {
           return deletedEntries > 10;
         },
       ).then((res) => watchHistory = res),
+      Hive.openBox(
+        'localWatchLater',
+        compactionStrategy: (entries, deletedEntries) {
+          return deletedEntries > 10;
+        },
+      ).then((res) => watchLater = res),
     ]);
   }
 
@@ -108,6 +115,7 @@ abstract final class GStorage {
       Accounts.account.compact(),
       watchProgress.compact(),
       watchHistory.compact(),
+      watchLater.compact(),
     ]);
   }
 
@@ -121,6 +129,7 @@ abstract final class GStorage {
       Accounts.account.close(),
       watchProgress.close(),
       watchHistory.close(),
+      watchLater.close(),
     ]);
   }
 }

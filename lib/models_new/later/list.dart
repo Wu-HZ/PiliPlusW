@@ -96,4 +96,27 @@ class LaterItemModel with MultiSelectData {
         ? null
         : Dimension.fromJson(json['dimension'] as Map<String, dynamic>),
   );
+
+  Map<String, dynamic> toJson() => {
+    'aid': aid,
+    'videos': videos,
+    'pic': pic,
+    'title': title,
+    'pubdate': pubdate,
+    'duration': duration,
+    'redirect_url': redirectUrl,
+    'rights': rights?.toJson(),
+    'owner': owner?.toJson(),
+    'stat': stat?.toJson(),
+    'pages': pages?.map((e) => e.toJson()).toList(),
+    'bangumi': bangumi?.toJson(),
+    'cid': cid,
+    'progress': progress,
+    'bvid': bvid,
+    'is_pgc': isPgc,
+    'pgc_label': pgcLabel,
+    'is_pugv': isPugv,
+    'season_id': seasonId,
+    'dimension': dimension?.toJson(),
+  };
 }

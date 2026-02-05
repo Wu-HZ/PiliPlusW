@@ -4,14 +4,11 @@ import 'package:PiliMinus/common/widgets/gesture/horizontal_drag_gesture_recogni
 import 'package:PiliMinus/common/widgets/scroll_physics.dart';
 import 'package:PiliMinus/common/widgets/view_safe_area.dart';
 import 'package:PiliMinus/models/common/later_view_type.dart';
-import 'package:PiliMinus/models_new/later/list.dart';
 import 'package:PiliMinus/pages/fav_detail/view.dart';
 import 'package:PiliMinus/pages/later/base_controller.dart';
 import 'package:PiliMinus/pages/later/controller.dart';
-import 'package:PiliMinus/utils/accounts.dart';
 import 'package:PiliMinus/utils/extension/get_ext.dart';
 import 'package:PiliMinus/utils/extension/scroll_controller_ext.dart';
-import 'package:PiliMinus/utils/request_utils.dart';
 import 'package:flutter/material.dart' hide TabBarView;
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -153,61 +150,12 @@ class _LaterPageState extends State<LaterPage>
   PreferredSizeWidget _buildAppbar(bool enableMultiSelect) {
     final theme = Theme.of(context);
     Color color = theme.colorScheme.secondary;
-    final btnStyle = TextButton.styleFrom(visualDensity: .compact);
-    final textStyle = TextStyle(color: theme.colorScheme.onSurfaceVariant);
     return MultiSelectAppBarWidget(
       visible: enableMultiSelect,
       ctr: currCtr(),
-      actions: [
-        TextButton(
-          style: btnStyle,
-          onPressed: () {
-            final ctr = currCtr();
-            RequestUtils.onCopyOrMove<LaterItemModel>(
-              context: context,
-              isCopy: true,
-              ctr: ctr,
-              mediaId: null,
-              mid: ctr.mid,
-            );
-          },
-          child: Text('复制', style: textStyle),
-        ),
-        TextButton(
-          style: btnStyle,
-          onPressed: () {
-            final ctr = currCtr();
-            RequestUtils.onCopyOrMove<LaterItemModel>(
-              context: context,
-              isCopy: false,
-              ctr: ctr,
-              mediaId: null,
-              mid: ctr.mid,
-            );
-          },
-          child: Text('移动', style: textStyle),
-        ),
-      ],
       child: AppBar(
         title: const Text('稍后再看'),
         actions: [
-          IconButton(
-            tooltip: '搜索',
-            onPressed: () {
-              final mid = Accounts.main.mid;
-              Get.toNamed(
-                '/laterSearch',
-                arguments: {
-                  'type': 0,
-                  'mediaId': mid,
-                  'mid': mid,
-                  'title': '稍后再看',
-                  'count': _baseCtr.counts[LaterViewType.all.index],
-                },
-              );
-            },
-            icon: const Icon(Icons.search),
-          ),
           Builder(
             key: _sortKey,
             builder: (context) {
@@ -218,9 +166,9 @@ class _LaterPageState extends State<LaterPage>
                 onSelected: (value) => currCtr()
                   ..asc.value = value
                   ..onReload(),
-                borderRadius: const .all(.circular(20)),
+                borderRadius: BorderRadius.circular(20),
                 child: Padding(
-                  padding: const .symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   child: Text.rich(
                     style: TextStyle(fontSize: 14, height: 1, color: color),
                     strutStyle: const StrutStyle(
@@ -232,7 +180,7 @@ class _LaterPageState extends State<LaterPage>
                       children: [
                         TextSpan(text: value ? '最早添加' : '最近添加'),
                         WidgetSpan(
-                          alignment: .middle,
+                          alignment: PlaceholderAlignment.middle,
                           child: Icon(
                             size: 14,
                             MdiIcons.unfoldMoreHorizontal,
@@ -257,48 +205,10 @@ class _LaterPageState extends State<LaterPage>
               );
             },
           ),
-          PopupMenuButton(
-            tooltip: '清空',
-            borderRadius: const .all(.circular(20)),
-            child: Padding(
-              padding: const .symmetric(horizontal: 12, vertical: 6),
-              child: Text.rich(
-                style: TextStyle(fontSize: 14, height: 1, color: color),
-                strutStyle: const StrutStyle(
-                  leading: 0,
-                  height: 1,
-                  fontSize: 14,
-                ),
-                TextSpan(
-                  children: [
-                    const TextSpan(text: '清空'),
-                    WidgetSpan(
-                      alignment: .middle,
-                      child: Icon(
-                        size: 14,
-                        MdiIcons.unfoldMoreHorizontal,
-                        color: color,
-                      ),
-                    ),
-                  ],
-                  style: TextStyle(color: color),
-                ),
-              ),
-            ),
-            itemBuilder: (_) => [
-              PopupMenuItem(
-                onTap: () => currCtr().toViewClear(context, 1),
-                child: const Text('清空失效'),
-              ),
-              PopupMenuItem(
-                onTap: () => currCtr().toViewClear(context, 2),
-                child: const Text('清空看完'),
-              ),
-              PopupMenuItem(
-                onTap: () => currCtr().toViewClear(context),
-                child: const Text('清空全部'),
-              ),
-            ],
+          IconButton(
+            tooltip: '清空全部',
+            onPressed: () => currCtr().toViewClear(context),
+            icon: const Icon(Icons.delete_outline),
           ),
           const SizedBox(width: 8),
         ],

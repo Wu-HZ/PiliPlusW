@@ -14,4 +14,10 @@ class Stat {
     view: json['view'] as int?,
     danmaku: json['danmaku'] as int?,
   );
+
+  Map<String, dynamic> toJson() => {
+    'aid': aid,
+    'view': view,
+    'danmaku': danmaku,
+  };
 }

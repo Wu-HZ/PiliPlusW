@@ -8,4 +8,8 @@ class Rights {
   factory Rights.fromJson(Map<String, dynamic> json) => Rights(
     isCooperation: json['is_cooperation'] as int?,
   );
+
+  Map<String, dynamic> toJson() => {
+    'is_cooperation': isCooperation,
+  };
 }

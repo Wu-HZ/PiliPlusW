@@ -11,6 +11,7 @@ import 'package:PiliMinus/models_new/video/video_detail/stat_detail.dart';
 import 'package:PiliMinus/models_new/video/video_tag/data.dart';
 import 'package:PiliMinus/pages/video/controller.dart';
 import 'package:PiliMinus/pages/video/introduction/ugc/widgets/triple_mixin.dart';
+import 'package:PiliMinus/services/local_watch_later_service.dart';
 import 'package:PiliMinus/utils/accounts.dart';
 import 'package:PiliMinus/utils/extension/iterable_ext.dart';
 import 'package:PiliMinus/utils/global_data.dart';
@@ -78,7 +79,8 @@ abstract class CommonIntroController extends GetxController
     heroTag = args['heroTag'];
     bvid = args['bvid'];
     cid = RxInt(args['cid']);
-    hasLater.value = args['sourceType'] == SourceType.watchLater;
+    hasLater.value = args['sourceType'] == SourceType.watchLater ||
+        LocalWatchLaterService.contains(bvid: bvid);
 
     queryVideoIntro();
     startTimer();
@@ -149,10 +151,26 @@ abstract class CommonIntroController extends GetxController
   }
 
   Future<void> viewLater() async {
-    final res = await (hasLater.value
-        ? UserHttp.toViewDel(aids: IdUtils.bv2av(bvid).toString())
-        : UserHttp.toViewLater(bvid: bvid));
-    if (res.isSuccess) hasLater.value = !hasLater.value;
+    final aid = IdUtils.bv2av(bvid);
+    if (hasLater.value) {
+      await LocalWatchLaterService.delete(aid: aid, bvid: bvid);
+      hasLater.value = false;
+    } else {
+      final detail = videoDetail.value;
+      await LocalWatchLaterService.addFromVideo(
+        aid: aid,
+        bvid: bvid,
+        cid: cid.value,
+        title: detail.title,
+        cover: detail.pic,
+        duration: detail.duration,
+        authorName: detail.owner?.name,
+        authorMid: detail.owner?.mid,
+        authorFace: detail.owner?.face,
+      );
+      hasLater.value = true;
+      SmartDialog.showToast('已添加到稍后再看');
+    }
   }
 }
 

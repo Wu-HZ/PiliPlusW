@@ -79,11 +79,18 @@ class _LaterViewChildPageState extends State<LaterViewChildPage>
                     videoItem: videoItem,
                     ctr: _laterController,
                     onViewLater: (cid) {
+                      // Convert progress from seconds to milliseconds
+                      // progress == -1 means completed, start from beginning
+                      final progressMs =
+                          (videoItem.progress != null && videoItem.progress! > 0)
+                              ? videoItem.progress! * 1000
+                              : null;
                       PageUtils.toVideoPage(
                         bvid: videoItem.bvid,
                         cid: cid,
                         cover: videoItem.pic,
                         title: videoItem.title,
+                        progress: progressMs,
                         extraArguments: _baseCtr.isPlayAll.value
                             ? {
                                 'oid': videoItem.aid,
@@ -92,7 +99,6 @@ class _LaterViewChildPageState extends State<LaterViewChildPage>
                                     .baseCtr
                                     .counts[LaterViewType.all.index],
                                 'favTitle': '稍后再看',
-                                'mediaId': _laterController.mid,
                                 'desc': _laterController.asc.value,
                                 'isContinuePlaying': index != 0,
                               }
