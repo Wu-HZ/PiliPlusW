@@ -1,5 +1,8 @@
 import 'package:PiliMinus/models/model_owner.dart';
+import 'package:PiliMinus/models_new/fav/fav_detail/cnt_info.dart';
 import 'package:PiliMinus/models_new/later/list.dart';
+import 'package:PiliMinus/models_new/media_list/media_list.dart';
+import 'package:PiliMinus/models_new/media_list/page.dart' as media_page;
 import 'package:PiliMinus/utils/storage.dart';
 
 /// Local watch later storage service using Hive
@@ -194,5 +197,76 @@ class LocalWatchLaterService {
   /// Check if there are more items (for pagination)
   static bool hasMore({int viewType = 0, required int currentCount}) {
     return currentCount < getCount(viewType: viewType);
+  }
+
+  /// Get watch later items as MediaListItemModel for the video player media list panel
+  /// Supports cursor-based pagination using oid (aid)
+  static List<MediaListItemModel> getAsMediaList({
+    int? oid,
+    int ps = 20,
+    bool desc = false,
+    bool isLoadPrevious = false,
+  }) {
+    final allItems = <LaterItemModel>[];
+
+    for (final key in GStorage.watchLater.keys) {
+      final data = GStorage.watchLater.get(key);
+      if (data != null) {
+        try {
+          final jsonMap = _convertMap(data);
+          final item = LaterItemModel.fromJson(jsonMap);
+          allItems.add(item);
+        } catch (_) {
+          // Skip invalid entries
+        }
+      }
+    }
+
+    // Sort by pubdate
+    if (desc) {
+      allItems.sort((a, b) => (a.pubdate ?? 0).compareTo(b.pubdate ?? 0));
+    } else {
+      allItems.sort((a, b) => (b.pubdate ?? 0).compareTo(a.pubdate ?? 0));
+    }
+
+    // Find the starting index based on oid (cursor)
+    int startIndex = 0;
+    if (oid != null) {
+      final cursorIndex = allItems.indexWhere((item) => item.aid == oid);
+      if (cursorIndex != -1) {
+        startIndex = isLoadPrevious ? cursorIndex - ps : cursorIndex + 1;
+        if (startIndex < 0) startIndex = 0;
+      }
+    }
+
+    // Apply pagination
+    final endIndex = (startIndex + ps).clamp(0, allItems.length);
+    final paginatedItems = allItems.sublist(startIndex.clamp(0, allItems.length), endIndex);
+
+    // Convert to MediaListItemModel
+    return paginatedItems.map((item) {
+      final progressPercent = (item.duration != null && item.duration! > 0 && item.progress != null)
+          ? (item.progress == -1 ? 1.0 : item.progress! / item.duration!)
+          : null;
+
+      return MediaListItemModel(
+        aid: item.aid,
+        bvid: item.bvid,
+        title: item.title,
+        cover: item.pic,
+        duration: item.duration,
+        pubtime: item.pubdate,
+        upper: item.owner ?? Owner(name: ''),
+        type: 2, // archive type
+        progressPercent: progressPercent,
+        cntInfo: CntInfo(
+          play: item.stat?.view,
+          danmaku: item.stat?.danmaku,
+        ),
+        pages: item.cid != null
+            ? [media_page.Page(id: item.cid)]
+            : null,
+      );
+    }).toList();
   }
 }

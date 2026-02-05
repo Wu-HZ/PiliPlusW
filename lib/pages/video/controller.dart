@@ -358,6 +358,45 @@ class VideoDetailController extends GetxController
     if (!isReverse && count != null && mediaList.length >= count) {
       return;
     }
+
+    // Use local storage for watch later
+    if (sourceType == SourceType.watchLater) {
+      final items = LocalWatchLaterService.getAsMediaList(
+        oid: isReverse
+            ? null
+            : mediaList.isEmpty
+                ? args['isContinuePlaying'] == true
+                    ? args['oid']
+                    : null
+                : isLoadPrevious
+                    ? mediaList.first.aid
+                    : mediaList.last.aid,
+        ps: 20,
+        desc: _mediaDesc,
+        isLoadPrevious: isLoadPrevious,
+      );
+      if (items.isNotEmpty) {
+        if (isReverse) {
+          mediaList.value = items;
+          for (final item in mediaList) {
+            if (item.cid != null) {
+              try {
+                Get.find<UgcIntroController>(
+                  tag: heroTag,
+                ).onChangeEpisode(item);
+              } catch (_) {}
+              break;
+            }
+          }
+        } else if (isLoadPrevious) {
+          mediaList.insertAll(0, items);
+        } else {
+          mediaList.addAll(items);
+        }
+      }
+      return;
+    }
+
     final res = await UserHttp.getMediaList(
       type: args['mediaType'] ?? sourceType.mediaType,
       bizId: args['mediaId'] ?? -1,
