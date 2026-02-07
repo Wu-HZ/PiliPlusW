@@ -3,10 +3,9 @@ import 'package:PiliMinus/http/video.dart';
 import 'package:PiliMinus/pages/common/common_list_controller.dart';
 
 class ZoneController extends CommonListController {
-  ZoneController({this.rid, this.seasonType});
+  ZoneController({this.rid});
 
   int? rid;
-  int? seasonType;
 
   @override
   void onInit() {
@@ -16,12 +15,6 @@ class ZoneController extends CommonListController {
 
   @override
   Future<LoadingState> customGetData() {
-    if (rid != null) {
-      return VideoHttp.getRankVideoList(rid!);
-    }
-    if (seasonType == 1) {
-      return VideoHttp.pgcRankList(seasonType: seasonType!);
-    }
-    return VideoHttp.pgcSeasonRankList(seasonType: seasonType!);
+    return VideoHttp.getRankVideoList(rid!);
   }
 }

@@ -33,7 +33,6 @@ class _RankPageState extends State<RankPage>
                 .map(
                   (item) => ZonePage(
                     rid: item.rid,
-                    seasonType: item.seasonType,
                   ),
                 )
                 .toList(),

@@ -5,16 +5,14 @@ import 'package:PiliMinus/http/loading_state.dart';
 import 'package:PiliMinus/models/model_hot_video_item.dart';
 import 'package:PiliMinus/pages/common/common_page.dart';
 import 'package:PiliMinus/pages/rank/zone/controller.dart';
-import 'package:PiliMinus/pages/rank/zone/widget/pgc_rank_item.dart';
 import 'package:PiliMinus/utils/grid.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class ZonePage extends StatefulWidget {
-  const ZonePage({super.key, this.rid, this.seasonType});
+  const ZonePage({super.key, this.rid});
 
   final int? rid;
-  final int? seasonType;
 
   @override
   State<ZonePage> createState() => _ZonePageState();
@@ -29,8 +27,8 @@ class _ZonePageState extends CommonPageState<ZonePage, ZoneController>
   void initState() {
     super.initState();
     controller = Get.put(
-      ZoneController(rid: widget.rid, seasonType: widget.seasonType),
-      tag: '${widget.rid}${widget.seasonType}',
+      ZoneController(rid: widget.rid),
+      tag: '${widget.rid}',
     );
   }
 
@@ -66,15 +64,12 @@ class _ZonePageState extends CommonPageState<ZonePage, ZoneController>
                 gridDelegate: gridDelegate,
                 itemBuilder: (context, index) {
                   final item = response[index];
-                  if (item is HotVideoItemModel) {
-                    return VideoCardH(
-                      videoItem: item,
-                      onRemove: () => controller.loadingState
-                        ..value.data!.removeAt(index)
-                        ..refresh(),
-                    );
-                  }
-                  return PgcRankItem(item: item);
+                  return VideoCardH(
+                    videoItem: item as HotVideoItemModel,
+                    onRemove: () => controller.loadingState
+                      ..value.data!.removeAt(index)
+                      ..refresh(),
+                  );
                 },
                 itemCount: response.length,
               )
