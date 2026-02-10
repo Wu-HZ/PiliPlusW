@@ -15,6 +15,7 @@ class SearchOnlyPage extends StatefulWidget {
 class _SearchOnlyPageState extends State<SearchOnlyPage> {
   final _tag = Utils.generateRandomString(6);
   late final SearchOnlyController _searchController;
+  late final bool _fromInactivity;
 
   @override
   void initState() {
@@ -23,6 +24,17 @@ class _SearchOnlyPageState extends State<SearchOnlyPage> {
       SearchOnlyController(_tag),
       tag: _tag,
     );
+    // Check if opened from inactivity detector
+    final args = Get.arguments;
+    _fromInactivity = args is Map && args['fromInactivity'] == true;
+  }
+
+  void _goBack() {
+    if (_fromInactivity) {
+      Get.back();
+    } else {
+      Get.offAllNamed('/');
+    }
   }
 
   @override
@@ -38,9 +50,12 @@ class _SearchOnlyPageState extends State<SearchOnlyPage> {
           ),
         ),
         leading: IconButton(
-          tooltip: '进入应用主页',
-          icon: const Icon(Icons.home_outlined, size: 22),
-          onPressed: () => Get.offAllNamed('/'),
+          tooltip: _fromInactivity ? '返回' : '进入应用主页',
+          icon: Icon(
+            _fromInactivity ? Icons.arrow_back : Icons.home_outlined,
+            size: 22,
+          ),
+          onPressed: _goBack,
         ),
         actions: [
           Obx(
@@ -162,7 +177,7 @@ class _SearchOnlyPageState extends State<SearchOnlyPage> {
             ),
             const SizedBox(height: 16),
             Text(
-              '输入关键词开始搜索',
+              _fromInactivity ? '防干扰模式已激活' : '输入关键词开始搜索',
               style: TextStyle(
                 fontSize: 16,
                 color: theme.colorScheme.outline,
@@ -170,9 +185,9 @@ class _SearchOnlyPageState extends State<SearchOnlyPage> {
             ),
             const SizedBox(height: 24),
             FilledButton.tonalIcon(
-              onPressed: () => Get.offAllNamed('/'),
-              icon: const Icon(Icons.home_outlined),
-              label: const Text('进入应用主页'),
+              onPressed: _goBack,
+              icon: Icon(_fromInactivity ? Icons.arrow_back : Icons.home_outlined),
+              label: Text(_fromInactivity ? '返回' : '进入应用主页'),
             ),
           ],
         ),

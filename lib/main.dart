@@ -11,6 +11,7 @@ import 'package:PiliMinus/models/common/theme/theme_color_type.dart';
 import 'package:PiliMinus/router/app_pages.dart';
 import 'package:PiliMinus/services/account_service.dart';
 import 'package:PiliMinus/services/download/download_service.dart';
+import 'package:PiliMinus/services/inactivity_detector.dart';
 import 'package:PiliMinus/services/service_locator.dart';
 import 'package:PiliMinus/utils/app_scheme.dart';
 import 'package:PiliMinus/utils/cache_manager.dart';
@@ -322,12 +323,14 @@ class MyApp extends StatelessWidget {
       );
     }
     if (PlatformUtils.isDesktop) {
-      return BackDetector(
-        onBack: _onBack,
-        child: child,
+      return InactivityDetector(
+        child: BackDetector(
+          onBack: _onBack,
+          child: child,
+        ),
       );
     }
-    return child;
+    return InactivityDetector(child: child);
   }
 
   /// from [DynamicColorBuilderState.initPlatformState]

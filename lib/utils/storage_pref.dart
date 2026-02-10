@@ -520,6 +520,12 @@ abstract final class Pref {
   static bool get antiGoodsReply =>
       _setting.get(SettingBoxKey.antiGoodsReply, defaultValue: false);
 
+  static bool get antiDistraction =>
+      _setting.get(SettingBoxKey.antiDistraction, defaultValue: false);
+
+  static int get antiDistractionTimeout =>
+      _setting.get(SettingBoxKey.antiDistractionTimeout, defaultValue: 30);
+
   static bool get expandDynLivePanel =>
       _setting.get(SettingBoxKey.expandDynLivePanel, defaultValue: false);
 

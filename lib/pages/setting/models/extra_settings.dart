@@ -539,6 +539,14 @@ List<SettingsModel> get extraSettings => [
     setKey: SettingBoxKey.disableLikeMsg,
     defaultVal: false,
   ),
+  SwitchModel(
+    title: '防干扰模式',
+    subtitle: '视频未播放时，闲置30秒自动进入仅搜索页面',
+    leading: const Icon(Icons.do_not_disturb_on_outlined),
+    setKey: SettingBoxKey.antiDistraction,
+    defaultVal: false,
+    onTap: _showAntiDistractionDialog,
+  ),
   const SwitchModel(
     title: '默认展示评论区',
     subtitle: '在视频详情页默认切换至评论区页（仅Tab型布局）',
@@ -1258,6 +1266,49 @@ void _showCacheDialog(BuildContext context, VoidCallback setState) {
                 val * 1024 * 1024,
               );
               setState();
+            } catch (e) {
+              SmartDialog.showToast(e.toString());
+            }
+          },
+          child: const Text('确定'),
+        ),
+      ],
+    ),
+  );
+}
+
+void _showAntiDistractionDialog(BuildContext context) {
+  String timeout = Pref.antiDistractionTimeout.toString();
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('防干扰超时时间'),
+      content: TextFormField(
+        autofocus: true,
+        initialValue: timeout,
+        keyboardType: TextInputType.number,
+        onChanged: (value) => timeout = value,
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        decoration: const InputDecoration(suffixText: '秒'),
+      ),
+      actions: [
+        TextButton(
+          onPressed: Get.back,
+          child: Text(
+            '取消',
+            style: TextStyle(color: ColorScheme.of(context).outline),
+          ),
+        ),
+        TextButton(
+          onPressed: () {
+            try {
+              final val = int.parse(timeout);
+              if (val < 5) {
+                SmartDialog.showToast('最小5秒');
+                return;
+              }
+              Get.back();
+              GStorage.setting.put(SettingBoxKey.antiDistractionTimeout, val);
             } catch (e) {
               SmartDialog.showToast(e.toString());
             }
