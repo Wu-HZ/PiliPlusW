@@ -165,13 +165,24 @@ abstract final class Pref {
           .toSet() ??
       MsgUnReadType.values.toSet();
 
-  static NavigationBarType get defaultHomePage =>
-      NavigationBarType.values[defaultHomePageIndex];
+  static StartupPageType get startupPage =>
+      StartupPageType.values[startupPageIndex];
 
-  static int get defaultHomePageIndex => _setting.get(
+  static int get startupPageIndex => _setting.get(
     SettingBoxKey.defaultHomePage,
-    defaultValue: NavigationBarType.home.index,
+    defaultValue: StartupPageType.home.index,
   );
+
+  static NavigationBarType get defaultHomePage =>
+      startupPage.navBarType ?? NavigationBarType.home;
+
+  static int get defaultHomePageIndex {
+    final startup = startupPage;
+    if (startup.isSearchOnly) {
+      return NavigationBarType.home.index;
+    }
+    return startup.index;
+  }
 
   static int get previewQ =>
       _setting.get(SettingBoxKey.previewQuality, defaultValue: 100);

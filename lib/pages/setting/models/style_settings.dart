@@ -301,7 +301,7 @@ List<SettingsModel> get styleSettings => [
   NormalModel(
     leading: const Icon(Icons.home_outlined),
     title: '默认启动页',
-    getSubtitle: () => '当前启动页：${Pref.defaultHomePage.label}',
+    getSubtitle: () => '当前启动页：${Pref.startupPage.label}',
     onTap: _showDefHomeDialog,
   ),
   const NormalModel(
@@ -921,12 +921,12 @@ Future<void> _showDefHomeDialog(
   BuildContext context,
   VoidCallback setState,
 ) async {
-  final res = await showDialog<NavigationBarType>(
+  final res = await showDialog<StartupPageType>(
     context: context,
-    builder: (context) => SelectDialog<NavigationBarType>(
-      title: '首页启动页',
-      value: Pref.defaultHomePage,
-      values: NavigationBarType.values.map((e) => (e, e.label)).toList(),
+    builder: (context) => SelectDialog<StartupPageType>(
+      title: '默认启动页',
+      value: Pref.startupPage,
+      values: StartupPageType.values.map((e) => (e, e.label)).toList(),
     ),
   );
   if (res != null) {

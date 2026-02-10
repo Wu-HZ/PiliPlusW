@@ -46,6 +46,7 @@ import 'package:PiliMinus/pages/music/view.dart';
 import 'package:PiliMinus/pages/popular_precious/view.dart';
 import 'package:PiliMinus/pages/popular_series/view.dart';
 import 'package:PiliMinus/pages/search/view.dart';
+import 'package:PiliMinus/pages/search_only/view.dart';
 import 'package:PiliMinus/pages/search_result/view.dart';
 import 'package:PiliMinus/pages/search_trending/view.dart';
 import 'package:PiliMinus/pages/setting/extra_setting.dart';
@@ -96,6 +97,8 @@ class Routes {
     GetPage(name: '/history', page: () => const HistoryPage()),
     // 搜索页面
     GetPage(name: '/search', page: () => const SearchPage()),
+    // 仅搜索页面（简化版）
+    GetPage(name: '/searchOnly', page: () => const SearchOnlyPage()),
     // 搜索结果
     GetPage(name: '/searchResult', page: () => const SearchResultPage()),
     // 动态

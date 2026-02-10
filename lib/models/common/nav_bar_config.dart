@@ -33,3 +33,26 @@ enum NavigationBarType implements EnumWithLabel {
 
   const NavigationBarType(this.label, this.icon, this.selectIcon, this.page);
 }
+
+enum StartupPageType implements EnumWithLabel {
+  home('首页'),
+  dynamics('动态'),
+  mine('我的'),
+  searchOnly('仅搜索');
+
+  @override
+  final String label;
+
+  const StartupPageType(this.label);
+
+  NavigationBarType? get navBarType {
+    return switch (this) {
+      StartupPageType.home => NavigationBarType.home,
+      StartupPageType.dynamics => NavigationBarType.dynamics,
+      StartupPageType.mine => NavigationBarType.mine,
+      StartupPageType.searchOnly => null,
+    };
+  }
+
+  bool get isSearchOnly => this == StartupPageType.searchOnly;
+}
