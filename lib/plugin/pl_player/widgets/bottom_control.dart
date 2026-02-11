@@ -106,7 +106,7 @@ class BottomControl extends StatelessWidget {
                         videoDetailController.viewPointList.isNotEmpty &&
                         videoDetailController.showVP.value)
                       Padding(
-                        padding: const .only(bottom: 8.75),
+                        padding: const EdgeInsets.only(bottom: 8.75),
                         child: ViewPointSegmentProgressBar(
                           segments: videoDetailController.viewPointList,
                           onSeek: PlatformUtils.isDesktop

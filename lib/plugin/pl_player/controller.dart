@@ -11,48 +11,6 @@ import 'package:PiliMinus/http/ua_type.dart';
 import 'package:PiliMinus/http/video.dart';
 import 'package:PiliMinus/models/common/account_type.dart';
 import 'package:PiliMinus/models/common/audio_normalization.dart';
-import 'package:PiliMinus/models/common/sponsor_block/skip_type.dart';
-import 'package:PiliMinus/models/common/super_resolution_type.dart';
-import 'package:PiliMinus/models/common/video/video_type.dart';
-import 'package:PiliMinus/models/user/danmaku_rule.dart';
-import 'package:PiliMinus/models/video/play/url.dart';
-import 'package:PiliMinus/models_new/video/video_shot/data.dart';
-import 'package:PiliMinus/pages/danmaku/danmaku_model.dart';
-import 'package:PiliMinus/pages/mine/controller.dart';
-import 'package:PiliMinus/plugin/pl_player/models/data_source.dart';
-import 'package:PiliMinus/plugin/pl_player/models/data_status.dart';
-import 'package:PiliMinus/plugin/pl_player/models/double_tap_type.dart';
-import 'package:PiliMinus/plugin/pl_player/models/duration.dart';
-import 'package:PiliMinus/plugin/pl_player/models/fullscreen_mode.dart';
-import 'package:PiliMinus/plugin/pl_player/models/heart_beat_type.dart';
-import 'package:PiliMinus/plugin/pl_player/models/play_repeat.dart';
-import 'package:PiliMinus/plugin/pl_player/models/play_status.dart';
-import 'package:PiliMinus/plugin/pl_player/models/video_fit_type.dart';
-import 'package:PiliMinus/plugin/pl_player/utils/fullscreen.dart';
-import 'package:PiliMinus/services/local_history_service.dart';
-import 'package:PiliMinus/services/local_watch_later_service.dart';
-import 'package:PiliMinus/services/service_locator.dart';
-import 'package:PiliMinus/utils/accounts.dart';
-import 'package:PiliMinus/utils/extension/box_ext.dart';
-import 'package:PiliMinus/utils/extension/num_ext.dart';
-import 'package:PiliMinus/utils/extension/string_ext.dart';
-import 'package:PiliMinus/utils/feed_back.dart';
-import 'package:PiliMinus/utils/image_utils.dart';
-import 'package:PiliMinus/utils/page_utils.dart';
-import 'package:PiliMinus/utils/path_utils.dart';
-import 'package:PiliMinus/utils/platform_utils.dart';
-import 'package:PiliMinus/utils/storage.dart';
-import 'package:PiliMinus/utils/storage_key.dart';
-import 'package:PiliMinus/utils/storage_pref.dart';
-import 'package:PiliMinus/utils/utils.dart';
-import 'package:PiliMinus/widgets/floating_video_window.dart';
-import 'package:PiliMinus/common/constants.dart';
-import 'package:PiliMinus/http/init.dart';
-import 'package:PiliMinus/http/loading_state.dart';
-import 'package:PiliMinus/http/ua_type.dart';
-import 'package:PiliMinus/http/video.dart';
-import 'package:PiliMinus/models/common/account_type.dart';
-import 'package:PiliMinus/models/common/audio_normalization.dart';
 import 'package:PiliMinus/models/common/super_resolution_type.dart';
 import 'package:PiliMinus/models/common/video/video_type.dart';
 import 'package:PiliMinus/models/user/danmaku_rule.dart';
@@ -61,6 +19,8 @@ import 'package:PiliMinus/models_new/video/video_shot/data.dart';
 import 'package:PiliMinus/pages/danmaku/danmaku_model.dart';
 import 'package:PiliMinus/pages/mine/controller.dart';
 import 'package:PiliMinus/pages/sponsor_block/block_mixin.dart';
+import 'package:PiliMinus/services/local_history_service.dart';
+import 'package:PiliMinus/services/local_watch_later_service.dart';
 import 'package:PiliMinus/plugin/pl_player/models/data_source.dart';
 import 'package:PiliMinus/plugin/pl_player/models/data_status.dart';
 import 'package:PiliMinus/plugin/pl_player/models/double_tap_type.dart';
@@ -214,14 +174,6 @@ class PlPlayerController with BlockConfigMixin {
   int _heartDuration = 0;
   int? width;
   int? height;
-
-  // Local history metadata
-  String? _title;
-  String? _cover;
-  String? _authorName;
-  int? _authorMid;
-  String? _authorFace;
-  int? _videoDuration;
 
   late final tryLook = !Accounts.get(AccountType.video).isLogin && Pref.p1080;
 
@@ -741,6 +693,14 @@ class PlPlayerController with BlockConfigMixin {
   String? typeTag;
   int? mediaType;
 
+  // Local history metadata
+  String? _title;
+  String? _cover;
+  String? _authorName;
+  int? _authorMid;
+  String? _authorFace;
+  int? _videoDuration;
+
   // 初始化资源
   Future<void> setDataSource(
     DataSource dataSource, {
@@ -781,6 +741,12 @@ class PlPlayerController with BlockConfigMixin {
       this.dirPath = dirPath;
       this.typeTag = typeTag;
       this.mediaType = mediaType;
+      _title = title;
+      _cover = cover;
+      _authorName = authorName;
+      _authorMid = authorMid;
+      _authorFace = authorFace;
+      _videoDuration = duration?.inSeconds;
       isFileSource = dataSource.type == DataSourceType.file;
       _processing = true;
       this.isLive = isLive;
@@ -802,14 +768,6 @@ class PlPlayerController with BlockConfigMixin {
       _epid = epid;
       _seasonId = seasonId;
       _pgcType = pgcType;
-
-      // Local history metadata
-      _title = title;
-      _cover = cover;
-      _authorName = authorName;
-      _authorMid = authorMid;
-      _authorFace = authorFace;
-      _videoDuration = duration?.inSeconds;
 
       if (showSeekPreview) {
         _clearPreview();
@@ -1780,7 +1738,7 @@ class PlPlayerController with BlockConfigMixin {
   }
 
   // 记录播放记录
-  Future<void>? makeHeartBeat(
+  Future<void> makeHeartBeat(
     int progress, {
     HeartBeatType type = HeartBeatType.playing,
     bool isManual = false,
@@ -1791,18 +1749,15 @@ class PlPlayerController with BlockConfigMixin {
     dynamic seasonId,
     dynamic pgcType,
     VideoType? videoType,
-  }) {
+  }) async {
     if (isLive) {
-      return null;
+      return;
     }
     if (MineController.anonymity.value || progress == 0) {
       return;
-    } else if (playerStatus.value == PlayerStatus.paused) {
-    if (!enableHeart || MineController.anonymity.value || progress == 0) {
-      return null;
     } else if (playerStatus.isPaused) {
       if (!isManual) {
-        return null;
+        return;
       }
     }
     bool isComplete =
@@ -1828,7 +1783,7 @@ class PlPlayerController with BlockConfigMixin {
         title: _title,
         cover: _cover,
         progress: isComplete ? -1 : progress,
-        duration: _videoDuration ?? durationSeconds.value.inSeconds,
+        duration: _videoDuration ?? duration.value.inSeconds,
         authorName: _authorName,
         authorMid: _authorMid,
         authorFace: _authorFace,
@@ -1847,8 +1802,6 @@ class PlPlayerController with BlockConfigMixin {
     else if (progress - _heartDuration >= 5) {
       _heartDuration = progress;
       await LocalHistoryService.addFromPlayback(
-    Future<void> send() {
-      return VideoHttp.heartBeat(
         aid: aid ?? _aid,
         bvid: bvid ?? _bvid,
         cid: cid ?? this.cid,
@@ -1856,7 +1809,7 @@ class PlPlayerController with BlockConfigMixin {
         title: _title,
         cover: _cover,
         progress: progress,
-        duration: _videoDuration ?? durationSeconds.value.inSeconds,
+        duration: _videoDuration ?? duration.value.inSeconds,
         authorName: _authorName,
         authorMid: _authorMid,
         authorFace: _authorFace,
@@ -1870,23 +1823,6 @@ class PlPlayerController with BlockConfigMixin {
         progress: progress,
       );
     }
-
-    switch (type) {
-      case HeartBeatType.playing:
-        if (progress - _heartDuration >= 5) {
-          _heartDuration = progress;
-          return send();
-        }
-      case HeartBeatType.status:
-        if (progress - _heartDuration >= 2) {
-          _heartDuration = progress;
-          return send();
-        }
-      case HeartBeatType.completed:
-        if (isComplete) progress = -1;
-        return send();
-    }
-    return null;
   }
 
   void setPlayRepeat(PlayRepeat type) {
