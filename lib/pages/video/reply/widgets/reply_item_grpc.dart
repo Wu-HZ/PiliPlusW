@@ -31,6 +31,28 @@ import 'package:PiliMinus/utils/platform_utils.dart';
 import 'package:PiliMinus/utils/storage_pref.dart';
 import 'package:PiliMinus/utils/url_utils.dart';
 import 'package:PiliMinus/utils/utils.dart';
+import 'package:PiliMinus/http/reply.dart';
+import 'package:PiliMinus/http/video.dart';
+import 'package:PiliMinus/models/common/badge_type.dart';
+import 'package:PiliMinus/models/common/image_type.dart';
+import 'package:PiliMinus/pages/dynamics/widgets/vote.dart';
+import 'package:PiliMinus/pages/save_panel/view.dart';
+import 'package:PiliMinus/pages/video/controller.dart';
+import 'package:PiliMinus/pages/video/reply/widgets/zan_grpc.dart';
+import 'package:PiliMinus/utils/accounts.dart';
+import 'package:PiliMinus/utils/app_scheme.dart';
+import 'package:PiliMinus/utils/date_utils.dart';
+import 'package:PiliMinus/utils/duration_utils.dart';
+import 'package:PiliMinus/utils/extension/context_ext.dart';
+import 'package:PiliMinus/utils/extension/num_ext.dart';
+import 'package:PiliMinus/utils/extension/theme_ext.dart';
+import 'package:PiliMinus/utils/feed_back.dart';
+import 'package:PiliMinus/utils/image_utils.dart';
+import 'package:PiliMinus/utils/page_utils.dart';
+import 'package:PiliMinus/utils/platform_utils.dart';
+import 'package:PiliMinus/utils/storage_pref.dart';
+import 'package:PiliMinus/utils/url_utils.dart';
+import 'package:PiliMinus/utils/utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
@@ -797,23 +819,33 @@ class ReplyItemGrpc extends StatelessWidget {
     }
 
     if (!hasNote &&
-        (content.richText.hasNote() ||
-            replyItem.replyControl.bizScene == 'note')) {
+        replyItem.replyControl.isNote &&
+        replyItem.replyControl.isNoteV2) {
+      final Color color;
+      NoDeadlineTapGestureRecognizer? recognizer;
+
       final hasClickUrl = content.richText.note.hasClickUrl();
+      if (hasClickUrl || content.richText.opus.hasOpusId()) {
+        color = theme.colorScheme.primary;
+        recognizer = NoDeadlineTapGestureRecognizer()
+          ..onTap = () => hasClickUrl
+              ? PiliScheme.routePushFromUrl(content.richText.note.clickUrl)
+              : Get.toNamed(
+                  '/articlePage',
+                  parameters: {
+                    'id': content.richText.opus.opusId.toString(),
+                    'type': 'opus',
+                  },
+                );
+      } else {
+        color = theme.colorScheme.secondary;
+      }
       spanChildren.insert(
         0,
         TextSpan(
           text: '[笔记] ',
-          style: TextStyle(
-            color: hasClickUrl
-                ? theme.colorScheme.primary
-                : theme.colorScheme.secondary,
-          ),
-          recognizer: hasClickUrl
-              ? (NoDeadlineTapGestureRecognizer()
-                  ..onTap = () =>
-                      PageUtils.handleWebview(content.richText.note.clickUrl))
-              : null,
+          style: TextStyle(color: color),
+          recognizer: recognizer,
         ),
       );
     }

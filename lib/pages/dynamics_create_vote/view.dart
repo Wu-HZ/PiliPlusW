@@ -1,8 +1,8 @@
 import 'dart:io' show File;
 
 import 'package:PiliMinus/common/widgets/button/icon_button.dart';
-import 'package:PiliMinus/common/widgets/flutter/time_picker.dart';
 import 'package:PiliMinus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliMinus/common/widgets/time_picker.dart';
 import 'package:PiliMinus/models/dynamics/vote_model.dart';
 import 'package:PiliMinus/pages/dynamics_create_vote/controller.dart';
 import 'package:PiliMinus/utils/date_utils.dart';

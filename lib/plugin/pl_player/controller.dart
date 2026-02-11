@@ -46,6 +46,46 @@ import 'package:PiliMinus/utils/storage_key.dart';
 import 'package:PiliMinus/utils/storage_pref.dart';
 import 'package:PiliMinus/utils/utils.dart';
 import 'package:PiliMinus/widgets/floating_video_window.dart';
+import 'package:PiliMinus/common/constants.dart';
+import 'package:PiliMinus/http/init.dart';
+import 'package:PiliMinus/http/loading_state.dart';
+import 'package:PiliMinus/http/ua_type.dart';
+import 'package:PiliMinus/http/video.dart';
+import 'package:PiliMinus/models/common/account_type.dart';
+import 'package:PiliMinus/models/common/audio_normalization.dart';
+import 'package:PiliMinus/models/common/super_resolution_type.dart';
+import 'package:PiliMinus/models/common/video/video_type.dart';
+import 'package:PiliMinus/models/user/danmaku_rule.dart';
+import 'package:PiliMinus/models/video/play/url.dart';
+import 'package:PiliMinus/models_new/video/video_shot/data.dart';
+import 'package:PiliMinus/pages/danmaku/danmaku_model.dart';
+import 'package:PiliMinus/pages/mine/controller.dart';
+import 'package:PiliMinus/pages/sponsor_block/block_mixin.dart';
+import 'package:PiliMinus/plugin/pl_player/models/data_source.dart';
+import 'package:PiliMinus/plugin/pl_player/models/data_status.dart';
+import 'package:PiliMinus/plugin/pl_player/models/double_tap_type.dart';
+import 'package:PiliMinus/plugin/pl_player/models/duration.dart';
+import 'package:PiliMinus/plugin/pl_player/models/fullscreen_mode.dart';
+import 'package:PiliMinus/plugin/pl_player/models/heart_beat_type.dart';
+import 'package:PiliMinus/plugin/pl_player/models/play_repeat.dart';
+import 'package:PiliMinus/plugin/pl_player/models/play_status.dart';
+import 'package:PiliMinus/plugin/pl_player/models/video_fit_type.dart';
+import 'package:PiliMinus/plugin/pl_player/utils/fullscreen.dart';
+import 'package:PiliMinus/services/service_locator.dart';
+import 'package:PiliMinus/utils/accounts.dart';
+import 'package:PiliMinus/utils/extension/box_ext.dart';
+import 'package:PiliMinus/utils/extension/num_ext.dart';
+import 'package:PiliMinus/utils/extension/string_ext.dart';
+import 'package:PiliMinus/utils/feed_back.dart';
+import 'package:PiliMinus/utils/image_utils.dart';
+import 'package:PiliMinus/utils/page_utils.dart';
+import 'package:PiliMinus/utils/path_utils.dart';
+import 'package:PiliMinus/utils/platform_utils.dart';
+import 'package:PiliMinus/utils/storage.dart';
+import 'package:PiliMinus/utils/storage_key.dart';
+import 'package:PiliMinus/utils/storage_pref.dart';
+import 'package:PiliMinus/utils/utils.dart';
+import 'package:PiliMinus/widgets/floating_video_window.dart';
 import 'package:archive/archive.dart' show getCrc32;
 import 'package:canvas_danmaku/canvas_danmaku.dart';
 import 'package:dio/dio.dart' show Options;
@@ -65,7 +105,7 @@ import 'package:path/path.dart' as path;
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:window_manager/window_manager.dart';
 
-class PlPlayerController {
+class PlPlayerController with BlockConfigMixin {
   Player? _videoPlayerController;
   VideoController? _videoController;
 
@@ -79,25 +119,24 @@ class PlPlayerController {
   final playerStatus = PlPlayerStatus(PlayerStatus.playing);
 
   ///
-  final PlPlayerDataStatus dataStatus = PlPlayerDataStatus();
+  final Rx<DataStatus> dataStatus = Rx(DataStatus.none);
 
   // bool controlsEnabled = false;
 
   /// 响应数据
   /// 带有Seconds的变量只在秒数更新时更新，以避免频繁触发重绘
   // 播放位置
-  final Rx<Duration> position = Rx(Duration.zero);
+  Duration position = Duration.zero;
   final RxInt positionSeconds = 0.obs;
 
   /// 进度条位置
-  final Rx<Duration> sliderPosition = Rx(Duration.zero);
+  Duration sliderPosition = Duration.zero;
   final RxInt sliderPositionSeconds = 0.obs;
   // 展示使用
   final Rx<Duration> sliderTempPosition = Rx(Duration.zero);
 
   /// 视频时长
   final Rx<Duration> duration = Rx(Duration.zero);
-  final Rx<Duration> durationSeconds = Duration.zero.obs;
 
   /// 视频缓冲
   final Rx<Duration> buffered = Rx(Duration.zero);
@@ -120,9 +159,6 @@ class PlPlayerController {
 
   /// 是否展示控制条
   final RxBool showControls = false.obs;
-
-  /// 音量控制条展示/隐藏
-  final RxBool showVolumeStatus = false.obs;
 
   /// 亮度控制条展示/隐藏
   final RxBool showBrightnessStatus = false.obs;
@@ -193,7 +229,6 @@ class PlPlayerController {
 
   Timer? _timer;
   Timer? _timerForSeek;
-  Timer? _timerForShowingVolume;
 
   Box setting = GStorage.setting;
 
@@ -241,6 +276,7 @@ class PlPlayerController {
   late bool isDesktopPip = false;
   late Rect _lastWindowBounds;
 
+  late final showWindowTitleBar = Pref.showWindowTitleBar;
   late final RxBool isAlwaysOnTop = false.obs;
   Future<void> setAlwaysOnTop(bool value) {
     isAlwaysOnTop.value = value;
@@ -266,7 +302,9 @@ class PlPlayerController {
 
     _lastWindowBounds = await windowManager.getBounds();
 
-    windowManager.setTitleBarStyle(TitleBarStyle.hidden);
+    if (showWindowTitleBar) {
+      windowManager.setTitleBarStyle(TitleBarStyle.hidden);
+    }
 
     late final Size size;
     final state = videoController!.player.state;
@@ -381,7 +419,7 @@ class PlPlayerController {
     final initialPosition = Offset(20.0, staggeredTop);
 
     // Save current position
-    final savedPosition = position.value;
+    final savedPosition = position;
 
     // Create the OverlayEntry
     late final OverlayEntry overlayEntry;
@@ -405,7 +443,7 @@ class PlPlayerController {
             epId: epId,
             cover: coverUrl,
             title: title,
-            progress: position.value.inMilliseconds,
+            progress: position.inMilliseconds,
           );
         },
         onClose: () {
@@ -484,19 +522,6 @@ class PlPlayerController {
   final bool showVipDanmaku = Pref.showVipDanmaku; // loop unswitching
   late double subtitleStrokeWidth = Pref.subtitleStrokeWidth;
   late int subtitleFontWeight = Pref.subtitleFontWeight;
-
-  late final pgcSkipType = Pref.pgcSkipType;
-  late final enablePgcSkip = Pref.pgcSkipType != SkipType.disable;
-  // sponsor block
-  late final bool enableSponsorBlock = Pref.enableSponsorBlock;
-  late final bool enableBlock = enableSponsorBlock || enablePgcSkip;
-  late final double blockLimit = Pref.blockLimit;
-  late final blockSettings = Pref.blockSettings;
-  late final List<Color> blockColor = Pref.blockColor;
-  late final Set<String> enableList = blockSettings
-      .where((item) => item.second != SkipType.disable)
-      .map((item) => item.first.name)
-      .toSet();
 
   // settings
   late final showFSActionItem = Pref.showFSActionItem;
@@ -600,22 +625,16 @@ class PlPlayerController {
   }
 
   void updateSliderPositionSecond() {
-    int newSecond = sliderPosition.value.inSeconds;
+    int newSecond = sliderPosition.inSeconds;
     if (sliderPositionSeconds.value != newSecond) {
       sliderPositionSeconds.value = newSecond;
     }
   }
 
   void updatePositionSecond() {
-    int newSecond = position.value.inSeconds;
+    int newSecond = position.inSeconds;
     if (positionSeconds.value != newSecond) {
       positionSeconds.value = newSecond;
-    }
-  }
-
-  void updateDurationSecond() {
-    if (durationSeconds.value != duration.value) {
-      durationSeconds.value = duration.value;
     }
   }
 
@@ -658,7 +677,7 @@ class PlPlayerController {
     bool notify = true,
     bool isInterrupt = false,
   }) async {
-    if (_instance?.playerStatus.value == PlayerStatus.playing) {
+    if (_instance?.playerStatus.isPlaying ?? false) {
       await _instance?.pause(notify: notify, isInterrupt: isInterrupt);
     }
   }
@@ -691,7 +710,7 @@ class PlPlayerController {
         if (sdkInt < 36) {
           Utils.channel.setMethodCallHandler((call) async {
             if (call.method == 'onUserLeaveHint') {
-              if (playerStatus.playing && _isCurrVideoPage) {
+              if (playerStatus.isPlaying && _isCurrVideoPage) {
                 enterPip();
               }
             }
@@ -774,7 +793,7 @@ class PlPlayerController {
       // 初始化视频倍速
       // _playbackSpeed.value = speed;
       // 初始化数据加载状态
-      dataStatus.status.value = DataStatus.loading;
+      dataStatus.value = DataStatus.loading;
       // 初始化全屏方向
       _isVertical = isVertical ?? false;
       _aid = aid;
@@ -813,21 +832,19 @@ class PlPlayerController {
       );
       // 获取视频时长 00:00
       this.duration.value = duration ?? _videoPlayerController!.state.duration;
-      position.value = buffered.value = sliderPosition.value =
-          seekTo ?? Duration.zero;
-      updateDurationSecond();
+      position = buffered.value = sliderPosition = seekTo ?? Duration.zero;
       updatePositionSecond();
       updateSliderPositionSecond();
       updateBufferedSecond();
       // 数据加载完成
-      dataStatus.status.value = DataStatus.loaded;
+      dataStatus.value = DataStatus.loaded;
 
       // listen the video player events
       startListeners();
       await _initializePlayer();
       onInit?.call();
     } catch (err, stackTrace) {
-      dataStatus.status.value = DataStatus.error;
+      dataStatus.value = DataStatus.error;
       if (kDebugMode) {
         debugPrint(stackTrace.toString());
         debugPrint('plPlayer err:  $err');
@@ -926,7 +943,7 @@ class PlPlayerController {
     isBuffering.value = false;
     buffered.value = Duration.zero;
     _heartDuration = 0;
-    position.value = Duration.zero;
+    position = Duration.zero;
     // 初始化时清空弹幕，防止上次重叠
     danmakuController?.clear();
 
@@ -977,6 +994,8 @@ class PlPlayerController {
       }
     }
 
+    final Map<String, String> extras = {};
+
     // 音轨
     final String audioUri;
     if (isFileSource) {
@@ -985,12 +1004,12 @@ class PlPlayerController {
           : path.join(dirPath!, typeTag!, PathUtils.audioNameType2);
     } else if (dataSource.audioSource?.isNotEmpty == true) {
       audioUri = Platform.isWindows
-          ? dataSource.audioSource!.replaceAll(';', '\\;')
-          : dataSource.audioSource!.replaceAll(':', '\\:');
+          ? dataSource.audioSource!.replaceAll(';', r'\;')
+          : dataSource.audioSource!.replaceAll(':', r'\:');
     } else {
       audioUri = '';
     }
-    await pp.setProperty('audio-files', audioUri);
+    if (audioUri.isNotEmpty) extras['audio-files'] = '"$audioUri"';
 
     _videoController ??= VideoController(
       player,
@@ -1003,8 +1022,7 @@ class PlPlayerController {
 
     player.setPlaylistMode(looping);
 
-    final Map<String, String>? filters;
-    if (Platform.isAndroid) {
+    if (kDebugMode || Platform.isAndroid) {
       String audioNormalization = AudioNormalization.getParamFromConfig(
         Pref.audioNormalization,
       );
@@ -1027,11 +1045,9 @@ class PlPlayerController {
           AudioNormalization.getParamFromConfig(Pref.fallbackNormalization),
         );
       }
-      filters = audioNormalization.isEmpty
-          ? null
-          : {'lavfi-complex': '"[aid1] $audioNormalization [ao]"'};
-    } else {
-      filters = null;
+      if (audioNormalization.isNotEmpty) {
+        extras['lavfi-complex'] = '"[aid1] $audioNormalization [ao]"';
+      }
     }
 
     // if (kDebugMode) debugPrint(filters.toString());
@@ -1055,7 +1071,7 @@ class PlPlayerController {
         videoUri,
         httpHeaders: dataSource.httpHeaders,
         start: seekTo,
-        extras: filters,
+        extras: extras.isEmpty ? null : extras,
       ),
       play: false,
     );
@@ -1075,23 +1091,22 @@ class PlPlayerController {
       SmartDialog.showToast('视频源为空，请重新进入本页面');
       return false;
     }
+    String? audioUri;
     if (!isLive) {
       if (dataSource.audioSource.isNullOrEmpty) {
         SmartDialog.showToast('音频源为空');
       } else {
-        await (_videoPlayerController!.platform!).setProperty(
-          'audio-files',
-          Platform.isWindows
-              ? dataSource.audioSource!.replaceAll(';', '\\;')
-              : dataSource.audioSource!.replaceAll(':', '\\:'),
-        );
+        audioUri = Platform.isWindows
+            ? dataSource.audioSource!.replaceAll(';', '\\;')
+            : dataSource.audioSource!.replaceAll(':', '\\:');
       }
     }
     await _videoPlayerController!.open(
       Media(
         dataSource.videoSource!,
         httpHeaders: dataSource.httpHeaders,
-        start: position.value,
+        start: position,
+        extras: audioUri == null ? null : {'audio-files': '"$audioUri"'},
       ),
       play: true,
     );
@@ -1131,9 +1146,9 @@ class PlPlayerController {
   Future<void>? autoEnterFullscreen() {
     if (enableAutoEnter) {
       return Future.delayed(const Duration(milliseconds: 500), () {
-        if (dataStatus.status.value != DataStatus.loaded) {
+        if (!dataStatus.loaded) {
           _stopListenerForEnterFullScreen();
-          _dataListenerForEnterFullScreen = dataStatus.status.listen((status) {
+          _dataListenerForEnterFullScreen = dataStatus.listen((status) {
             if (status == DataStatus.loaded) {
               _stopListenerForEnterFullScreen();
               triggerFullScreen(status: true);
@@ -1198,10 +1213,10 @@ class PlPlayerController {
         makeHeartBeat(positionSeconds.value, type: HeartBeatType.completed);
       }),
       controllerStream.position.listen((event) {
-        position.value = event;
+        position = event;
         updatePositionSecond();
         if (!isSliderMoving.value) {
-          sliderPosition.value = event;
+          sliderPosition = event;
           updateSliderPositionSecond();
         }
 
@@ -1229,7 +1244,7 @@ class PlPlayerController {
       if (kDebugMode)
         controllerStream.log.listen(((PlayerLog log) {
           if (log.level == 'error' || log.level == 'fatal') {
-            Utils.reportError('${log.prefix}: ${log.text}', null);
+            Utils.reportError('${log.level}: ${log.prefix}: ${log.text}', null);
           } else {
             debugPrint(log.toString());
           }
@@ -1300,12 +1315,8 @@ class PlPlayerController {
             isLive,
           );
         }),
-        position.listen((Duration event) {
-          EasyThrottle.throttle(
-            'mediaServicePosition',
-            const Duration(seconds: 1),
-            () => videoPlayerServiceHandler!.onPositionChange(event),
-          );
+        positionSeconds.listen((int event) {
+          videoPlayerServiceHandler!.onPositionChange(Duration(seconds: event));
         }),
       ],
     };
@@ -1327,7 +1338,7 @@ class PlPlayerController {
     if (position < Duration.zero) {
       position = Duration.zero;
     }
-    this.position.value = position;
+    this.position = position;
     updatePositionSecond();
     _heartDuration = position.inSeconds;
     if (duration.value.inSeconds != 0) {
@@ -1354,7 +1365,7 @@ class PlPlayerController {
         if (_playerCount == 0) {
           _timerForSeek?.cancel();
           _timerForSeek = null;
-        } else if (duration.value.inSeconds != 0) {
+        } else if (duration.value != Duration.zero) {
           try {
             await _videoPlayerController?.stream.buffer.first;
             danmakuController?.clear();
@@ -1362,7 +1373,7 @@ class PlPlayerController {
           } catch (e) {
             if (kDebugMode) debugPrint('seek failed: $e');
           }
-          // if (playerStatus.value == PlayerStatus.paused) {
+          // if (playerStatus.isPaused) {
           //   play();
           // }
           t.cancel();
@@ -1448,8 +1459,8 @@ class PlPlayerController {
   }
 
   /// 调整播放时间
-  void onChangedSlider(double v) {
-    sliderPosition.value = Duration(seconds: v.floor());
+  void onChangedSlider(int v) {
+    sliderPosition = Duration(seconds: v);
     updateSliderPositionSecond();
   }
 
@@ -1465,7 +1476,7 @@ class PlPlayerController {
 
   void onUpdatedSliderProgress(Duration value) {
     sliderTempPosition.value = value;
-    sliderPosition.value = value;
+    sliderPosition = value;
     updateSliderPositionSecond();
   }
 
@@ -1510,14 +1521,6 @@ class PlPlayerController {
     });
   }
 
-  void volumeUpdated() {
-    showVolumeStatus.value = true;
-    _timerForShowingVolume?.cancel();
-    _timerForShowingVolume = Timer(const Duration(seconds: 1), () {
-      showVolumeStatus.value = false;
-    });
-  }
-
   /// Set mute state for audio focus management in floating windows
   Future<void> setMute(bool muted) async {
     isMuted = muted;
@@ -1546,7 +1549,7 @@ class PlPlayerController {
       if (buffered.value == Duration.zero) {
         attr = VideoFitType.contain;
         _stopListenerForVideoFit();
-        _dataListenerForVideoFit = dataStatus.status.listen((status) {
+        _dataListenerForVideoFit = dataStatus.listen((status) {
           if (status == DataStatus.loaded) {
             _stopListenerForVideoFit();
             final attr = VideoFitType.values[fitValue];
@@ -1597,7 +1600,7 @@ class PlPlayerController {
       return;
     }
     if (val) {
-      if (playerStatus.value == PlayerStatus.playing) {
+      if (playerStatus.isPlaying) {
         longPressStatus.value = val;
         HapticFeedback.lightImpact();
         await setPlaybackSpeed(
@@ -1613,7 +1616,7 @@ class PlPlayerController {
 
   bool get _isCompleted =>
       videoPlayerController!.state.completed ||
-      (duration.value - position.value).inMilliseconds <= 50;
+      (duration.value - position).inMilliseconds <= 50;
 
   // 双击播放、暂停
   Future<void> onDoubleTapCenter() async {
@@ -1637,11 +1640,11 @@ class PlPlayerController {
   }
 
   void onForward(Duration duration) {
-    onForwardBackward(position.value + duration);
+    onForwardBackward(position + duration);
   }
 
   void onBackward(Duration duration) {
-    onForwardBackward(position.value - duration);
+    onForwardBackward(position - duration);
   }
 
   void onForwardBackward(Duration duration) {
@@ -1777,7 +1780,7 @@ class PlPlayerController {
   }
 
   // 记录播放记录
-  Future<void> makeHeartBeat(
+  Future<void>? makeHeartBeat(
     int progress, {
     HeartBeatType type = HeartBeatType.playing,
     bool isManual = false,
@@ -1788,21 +1791,23 @@ class PlPlayerController {
     dynamic seasonId,
     dynamic pgcType,
     VideoType? videoType,
-  }) async {
+  }) {
     if (isLive) {
-      return;
+      return null;
     }
     if (MineController.anonymity.value || progress == 0) {
       return;
     } else if (playerStatus.value == PlayerStatus.paused) {
+    if (!enableHeart || MineController.anonymity.value || progress == 0) {
+      return null;
+    } else if (playerStatus.isPaused) {
       if (!isManual) {
-        return;
+        return null;
       }
     }
     bool isComplete =
-        playerStatus.value == PlayerStatus.completed ||
-        type == HeartBeatType.completed;
-    if ((durationSeconds.value - position.value).inMilliseconds > 1000) {
+        playerStatus.isCompleted || type == HeartBeatType.completed;
+    if ((duration.value - position).inMilliseconds > 1000) {
       isComplete = false;
     }
 
@@ -1842,6 +1847,8 @@ class PlPlayerController {
     else if (progress - _heartDuration >= 5) {
       _heartDuration = progress;
       await LocalHistoryService.addFromPlayback(
+    Future<void> send() {
+      return VideoHttp.heartBeat(
         aid: aid ?? _aid,
         bvid: bvid ?? _bvid,
         cid: cid ?? this.cid,
@@ -1863,11 +1870,28 @@ class PlPlayerController {
         progress: progress,
       );
     }
+
+    switch (type) {
+      case HeartBeatType.playing:
+        if (progress - _heartDuration >= 5) {
+          _heartDuration = progress;
+          return send();
+        }
+      case HeartBeatType.status:
+        if (progress - _heartDuration >= 2) {
+          _heartDuration = progress;
+          return send();
+        }
+      case HeartBeatType.completed:
+        if (isComplete) progress = -1;
+        return send();
+    }
+    return null;
   }
 
   void setPlayRepeat(PlayRepeat type) {
     playRepeat = type;
-    video.put(VideoBoxKey.playRepeat, type.index);
+    if (!Pref.tempPlayerConf) video.put(VideoBoxKey.playRepeat, type.index);
   }
 
   void putSubtitleSettings() {
@@ -1908,7 +1932,6 @@ class PlPlayerController {
     Utils.channel.setMethodCallHandler(null);
     _timer?.cancel();
     _timerForSeek?.cancel();
-    _timerForShowingVolume?.cancel();
     // _position.close();
     // _playerEventSubs?.cancel();
     // _sliderPosition.close();
@@ -1920,7 +1943,7 @@ class PlPlayerController {
     // _controlsLock.close();
 
     // playerStatus.close();
-    // dataStatus.status.close();
+    // dataStatus.close();
 
     if (PlatformUtils.isDesktop && isAlwaysOnTop.value) {
       windowManager.setAlwaysOnTop(false);
@@ -1930,7 +1953,7 @@ class PlPlayerController {
     subscriptions.clear();
     _positionListeners.clear();
     _statusListeners.clear();
-    if (playerStatus.playing) {
+    if (playerStatus.isPlaying) {
       WakelockPlus.disable();
     }
     _videoPlayerController?.dispose();
@@ -1978,9 +2001,7 @@ class PlPlayerController {
       return;
     }
     if (videoShot case Success(:final response)) {
-      if (!showPreview.value) {
-        showPreview.value = true;
-      }
+      showPreview.value = true;
       previewIndex.value = max(
         0,
         (response.index.where((item) => item <= seconds).length - 2),

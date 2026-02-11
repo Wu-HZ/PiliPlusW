@@ -8,8 +8,8 @@ import 'package:PiliMinus/common/widgets/flutter/draggable_sheet/draggable_scrol
     as dyn_sheet;
 import 'package:PiliMinus/common/widgets/flutter/text_field/controller.dart';
 import 'package:PiliMinus/common/widgets/flutter/text_field/text_field.dart';
-import 'package:PiliMinus/common/widgets/flutter/time_picker.dart';
 import 'package:PiliMinus/common/widgets/pair.dart';
+import 'package:PiliMinus/common/widgets/time_picker.dart';
 import 'package:PiliMinus/http/dynamics.dart';
 import 'package:PiliMinus/http/loading_state.dart';
 import 'package:PiliMinus/models/common/publish_panel_type.dart';

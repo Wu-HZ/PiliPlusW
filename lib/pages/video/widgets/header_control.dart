@@ -48,6 +48,54 @@ import 'package:PiliMinus/utils/storage_key.dart';
 import 'package:PiliMinus/utils/storage_pref.dart';
 import 'package:PiliMinus/utils/utils.dart';
 import 'package:PiliMinus/utils/video_utils.dart';
+import 'package:PiliMinus/common/constants.dart';
+import 'package:PiliMinus/common/widgets/button/icon_button.dart';
+import 'package:PiliMinus/common/widgets/custom_icon.dart';
+import 'package:PiliMinus/common/widgets/dialog/report.dart';
+import 'package:PiliMinus/common/widgets/marquee.dart';
+import 'package:PiliMinus/http/danmaku.dart';
+import 'package:PiliMinus/http/danmaku_block.dart';
+import 'package:PiliMinus/http/init.dart';
+import 'package:PiliMinus/http/live.dart';
+import 'package:PiliMinus/http/loading_state.dart';
+import 'package:PiliMinus/http/video.dart';
+import 'package:PiliMinus/models/common/super_resolution_type.dart';
+import 'package:PiliMinus/models/common/video/audio_quality.dart';
+import 'package:PiliMinus/models/common/video/cdn_type.dart';
+import 'package:PiliMinus/models/common/video/video_decode_type.dart';
+import 'package:PiliMinus/models/common/video/video_quality.dart';
+import 'package:PiliMinus/models/video/play/url.dart';
+import 'package:PiliMinus/models_new/video/video_play_info/subtitle.dart';
+import 'package:PiliMinus/pages/common/common_intro_controller.dart';
+import 'package:PiliMinus/pages/danmaku/danmaku_model.dart';
+import 'package:PiliMinus/pages/setting/widgets/popup_item.dart';
+import 'package:PiliMinus/pages/setting/widgets/select_dialog.dart';
+import 'package:PiliMinus/pages/video/controller.dart';
+import 'package:PiliMinus/pages/video/introduction/local/controller.dart';
+import 'package:PiliMinus/pages/video/introduction/pgc/controller.dart';
+import 'package:PiliMinus/pages/video/introduction/ugc/controller.dart';
+import 'package:PiliMinus/pages/video/introduction/ugc/widgets/action_item.dart';
+import 'package:PiliMinus/pages/video/introduction/ugc/widgets/menu_row.dart';
+import 'package:PiliMinus/pages/video/widgets/header_mixin.dart';
+import 'package:PiliMinus/plugin/pl_player/controller.dart';
+import 'package:PiliMinus/plugin/pl_player/models/play_repeat.dart';
+import 'package:PiliMinus/plugin/pl_player/utils/fullscreen.dart';
+import 'package:PiliMinus/services/service_locator.dart';
+import 'package:PiliMinus/services/shutdown_timer_service.dart'
+    show shutdownTimerService;
+import 'package:PiliMinus/utils/accounts.dart';
+import 'package:PiliMinus/utils/accounts/account.dart';
+import 'package:PiliMinus/utils/extension/iterable_ext.dart';
+import 'package:PiliMinus/utils/extension/num_ext.dart';
+import 'package:PiliMinus/utils/extension/string_ext.dart';
+import 'package:PiliMinus/utils/image_utils.dart';
+import 'package:PiliMinus/utils/page_utils.dart';
+import 'package:PiliMinus/utils/platform_utils.dart';
+import 'package:PiliMinus/utils/storage.dart';
+import 'package:PiliMinus/utils/storage_key.dart';
+import 'package:PiliMinus/utils/storage_pref.dart';
+import 'package:PiliMinus/utils/utils.dart';
+import 'package:PiliMinus/utils/video_utils.dart';
 import 'package:battery_plus/battery_plus.dart';
 import 'package:canvas_danmaku/canvas_danmaku.dart';
 import 'package:dio/dio.dart';
@@ -417,7 +465,10 @@ class HeaderControlState extends State<HeaderControl>
                   dense: true,
                   onTap: () {
                     Get.back();
-                    PageUtils.scheduleExit(this.context, isFullScreen);
+                    shutdownTimerService.showScheduleExitDialog(
+                      this.context,
+                      isFullScreen: isFullScreen,
+                    );
                   },
                   leading: const Icon(Icons.hourglass_top_outlined, size: 20),
                   title: const Text('定时关闭', style: titleStyle),
@@ -448,79 +499,25 @@ class HeaderControlState extends State<HeaderControl>
                     title: const Text('重载视频', style: titleStyle),
                   ),
                 ],
-                ListTile(
+                PopupListTile<SuperResolutionType>(
                   dense: true,
                   leading: const Icon(
                     Icons.stay_current_landscape_outlined,
                     size: 20,
                   ),
-                  title: Row(
-                    children: [
-                      const Text(
-                        '超分辨率',
-                        strutStyle: StrutStyle(leading: 0, height: 1),
-                        style: TextStyle(
-                          height: 1,
-                          fontSize: 14,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Builder(
-                        builder: (context) => PopupMenuButton(
-                          initialValue:
-                              plPlayerController.superResolutionType.value,
-                          child: Padding(
-                            padding: const EdgeInsets.all(4),
-                            child: Text.rich(
-                              style: TextStyle(
-                                height: 1,
-                                fontSize: 14,
-                                color: theme.colorScheme.secondary,
-                              ),
-                              strutStyle: const StrutStyle(
-                                leading: 0,
-                                height: 1,
-                                fontSize: 14,
-                              ),
-                              TextSpan(
-                                children: [
-                                  TextSpan(
-                                    text: widget
-                                        .controller
-                                        .superResolutionType
-                                        .value
-                                        .title,
-                                  ),
-                                  WidgetSpan(
-                                    alignment: .middle,
-                                    child: Icon(
-                                      MdiIcons.unfoldMoreHorizontal,
-                                      size: 14,
-                                      color: theme.colorScheme.secondary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          onSelected: (value) {
-                            plPlayerController.setShader(value);
-                            if (context.mounted) {
-                              (context as Element).markNeedsBuild();
-                            }
-                          },
-                          itemBuilder: (context) => SuperResolutionType.values
-                              .map(
-                                (item) => PopupMenuItem(
-                                  value: item,
-                                  child: Text(item.title),
-                                ),
-                              )
-                              .toList(),
-                        ),
-                      ),
-                    ],
+                  title: const Text('超分辨率'),
+                  value: () {
+                    final value = plPlayerController.superResolutionType.value;
+                    return (value, value.label);
+                  },
+                  itemBuilder: (_) => enumItemBuilder<SuperResolutionType>(
+                    SuperResolutionType.values,
                   ),
+                  onSelected: (value, setState) {
+                    plPlayerController.setShader(value);
+                    setState();
+                  },
+                  descPosType: .title,
                 ),
                 if (!isFileSource)
                   ListTile(
@@ -672,7 +669,7 @@ class HeaderControlState extends State<HeaderControl>
                   leading: const Icon(Icons.repeat, size: 20),
                   title: const Text('播放顺序', style: titleStyle),
                   subtitle: Text(
-                    plPlayerController.playRepeat.desc,
+                    plPlayerController.playRepeat.label,
                     style: subTitleStyle,
                   ),
                 ),
@@ -708,13 +705,12 @@ class HeaderControlState extends State<HeaderControl>
                   onTap: () async {
                     Get.back();
                     try {
-                      final FilePickerResult? file = await FilePicker.platform
-                          .pickFiles();
-                      if (file != null) {
-                        final first = file.files.first;
-                        final path = first.path;
+                      final result = await FilePicker.platform.pickFiles();
+                      if (result != null) {
+                        final file = result.files.single;
+                        final path = file.path;
                         if (path != null) {
-                          final name = first.name;
+                          final name = file.name;
                           final length = videoDetailCtr.subtitles.length;
                           if (name.endsWith('.json')) {
                             final file = File(path);
@@ -1744,7 +1740,7 @@ class HeaderControlState extends State<HeaderControl>
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 20,
                       ),
-                      title: Text(i.desc),
+                      title: Text(i.label),
                       trailing: plPlayerController.playRepeat == i
                           ? Icon(
                               Icons.done,
@@ -1777,6 +1773,7 @@ class HeaderControlState extends State<HeaderControl>
             ((!horizontalScreen || plPlayerController.isDesktopPip) &&
                 !isPortrait))) {
       title = Padding(
+        key: titleKey,
         padding: isPortrait
             ? EdgeInsets.zero
             : const EdgeInsets.only(right: 10),
@@ -1796,7 +1793,6 @@ class HeaderControlState extends State<HeaderControl>
                   videoDetail.title!;
             }
             return MarqueeText(
-              key: titleKey,
               title,
               spacing: 30,
               velocity: 30,
@@ -2005,8 +2001,7 @@ class HeaderControlState extends State<HeaderControl>
                           child: IconButton(
                             tooltip: '片段信息',
                             style: btnStyle,
-                            onPressed: () =>
-                                videoDetailCtr.showSBDetail(context),
+                            onPressed: videoDetailCtr.showSBDetail,
                             icon: const Icon(
                               MdiIcons.advertisements,
                               size: 19,

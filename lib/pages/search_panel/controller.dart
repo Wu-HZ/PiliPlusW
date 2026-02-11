@@ -8,6 +8,18 @@ import 'package:PiliMinus/models/search/result.dart';
 import 'package:PiliMinus/pages/common/common_list_controller.dart';
 import 'package:PiliMinus/pages/search_result/controller.dart';
 import 'package:PiliMinus/utils/extension/scroll_controller_ext.dart';
+import 'dart:async' show StreamSubscription;
+
+import 'package:PiliMinus/http/loading_state.dart';
+import 'package:PiliMinus/http/search.dart';
+import 'package:PiliMinus/models/common/search/article_search_type.dart';
+import 'package:PiliMinus/models/common/search/search_type.dart';
+import 'package:PiliMinus/models/common/search/user_search_type.dart';
+import 'package:PiliMinus/models/common/search/video_search_type.dart';
+import 'package:PiliMinus/models/search/result.dart';
+import 'package:PiliMinus/pages/common/common_list_controller.dart';
+import 'package:PiliMinus/pages/search_result/controller.dart';
+import 'package:PiliMinus/utils/extension/scroll_controller_ext.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
@@ -54,16 +66,22 @@ class SearchPanelController<R extends SearchNumData<T>, T>
     onReload().whenComplete(SmartDialog.dismiss);
   }
 
+  StreamSubscription? _listener;
+
+  void cancelListener() {
+    _listener?.cancel();
+  }
+
   @override
   void onInit() {
     super.onInit();
     try {
-      searchResultController = Get.find<SearchResultController>(tag: tag)
-        ..toTopIndex.listen((index) {
-          if (index == searchType.index) {
-            scrollController.animToTop();
-          }
-        });
+      searchResultController = Get.find<SearchResultController>(tag: tag);
+      _listener = searchResultController!.toTopIndex.listen((index) {
+        if (index == searchType.index) {
+          scrollController.animToTop();
+        }
+      });
     } catch (_) {}
     queryData();
   }

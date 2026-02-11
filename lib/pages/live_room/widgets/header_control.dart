@@ -7,6 +7,14 @@ import 'package:PiliMinus/plugin/pl_player/controller.dart';
 import 'package:PiliMinus/plugin/pl_player/widgets/common_btn.dart';
 import 'package:PiliMinus/utils/page_utils.dart';
 import 'package:PiliMinus/utils/platform_utils.dart';
+import 'package:PiliMinus/common/widgets/marquee.dart';
+import 'package:PiliMinus/pages/live_room/controller.dart';
+import 'package:PiliMinus/pages/video/widgets/header_control.dart';
+import 'package:PiliMinus/plugin/pl_player/controller.dart';
+import 'package:PiliMinus/plugin/pl_player/widgets/common_btn.dart';
+import 'package:PiliMinus/services/shutdown_timer_service.dart'
+    show shutdownTimerService;
+import 'package:PiliMinus/utils/platform_utils.dart';
 import 'package:floating/floating.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -58,8 +66,8 @@ class _LiveHeaderControlState extends State<LiveHeaderControl>
     final liveController = widget.liveController;
     Widget child;
     child = Obx(
+      key: titleKey,
       () => MarqueeText(
-        key: titleKey,
         liveController.title.value,
         spacing: 30,
         velocity: 30,
@@ -218,7 +226,11 @@ class _LiveHeaderControlState extends State<LiveHeaderControl>
           ComBtn(
             height: 30,
             tooltip: '定时关闭',
-            onTap: () => PageUtils.scheduleExit(context, isFullScreen, true),
+            onTap: () => shutdownTimerService.showScheduleExitDialog(
+              context,
+              isFullScreen: isFullScreen,
+              isLive: true,
+            ),
             icon: const Icon(
               size: 18,
               Icons.schedule,

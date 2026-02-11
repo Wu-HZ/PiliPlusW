@@ -75,6 +75,19 @@ class _IntroDetailState extends State<PgcIntroPanel>
   @override
   Widget buildList(ThemeData theme) {
     return _buildInfo(theme);
+    return TabBarView<TabBarDragGestureRecognizer>(
+      controller: _tabController,
+      physics: const CustomTabBarViewScrollPhysics(),
+      horizontalDragGestureRecognizer: () =>
+          TabBarDragGestureRecognizer(isDxAllowed: isDxAllowed),
+      children: [
+        KeepAliveWrapper(builder: (context) => _buildInfo(theme)),
+        PgcReviewPage(
+          name: widget.item.title!,
+          mediaId: widget.item.mediaId,
+        ),
+      ],
+    );
   }
 
   Widget _buildInfo(ThemeData theme) {

@@ -58,6 +58,37 @@ import 'package:PiliMinus/utils/platform_utils.dart';
 import 'package:PiliMinus/utils/storage.dart';
 import 'package:PiliMinus/utils/storage_key.dart';
 import 'package:PiliMinus/utils/utils.dart';
+import 'package:PiliMinus/pages/video/controller.dart';
+import 'package:PiliMinus/pages/video/introduction/pgc/controller.dart';
+import 'package:PiliMinus/pages/video/post_panel/popup_menu_text.dart';
+import 'package:PiliMinus/pages/video/post_panel/view.dart';
+import 'package:PiliMinus/pages/video/widgets/header_control.dart';
+import 'package:PiliMinus/plugin/pl_player/controller.dart';
+import 'package:PiliMinus/plugin/pl_player/models/bottom_control_type.dart';
+import 'package:PiliMinus/plugin/pl_player/models/bottom_progress_behavior.dart';
+import 'package:PiliMinus/plugin/pl_player/models/data_status.dart';
+import 'package:PiliMinus/plugin/pl_player/models/double_tap_type.dart';
+import 'package:PiliMinus/plugin/pl_player/models/fullscreen_mode.dart';
+import 'package:PiliMinus/plugin/pl_player/models/gesture_type.dart';
+import 'package:PiliMinus/plugin/pl_player/models/play_status.dart';
+import 'package:PiliMinus/plugin/pl_player/models/video_fit_type.dart';
+import 'package:PiliMinus/plugin/pl_player/widgets/app_bar_ani.dart';
+import 'package:PiliMinus/plugin/pl_player/widgets/backward_seek.dart';
+import 'package:PiliMinus/plugin/pl_player/widgets/bottom_control.dart';
+import 'package:PiliMinus/plugin/pl_player/widgets/common_btn.dart';
+import 'package:PiliMinus/plugin/pl_player/widgets/forward_seek.dart';
+import 'package:PiliMinus/plugin/pl_player/widgets/mpv_convert_webp.dart';
+import 'package:PiliMinus/plugin/pl_player/widgets/play_pause_btn.dart';
+import 'package:PiliMinus/utils/duration_utils.dart';
+import 'package:PiliMinus/utils/extension/num_ext.dart';
+import 'package:PiliMinus/utils/extension/theme_ext.dart';
+import 'package:PiliMinus/utils/id_utils.dart';
+import 'package:PiliMinus/utils/image_utils.dart';
+import 'package:PiliMinus/utils/path_utils.dart';
+import 'package:PiliMinus/utils/platform_utils.dart';
+import 'package:PiliMinus/utils/storage.dart';
+import 'package:PiliMinus/utils/storage_key.dart';
+import 'package:PiliMinus/utils/utils.dart';
 import 'package:canvas_danmaku/canvas_danmaku.dart';
 import 'package:collection/collection.dart';
 import 'package:easy_debounce/easy_throttle.dart';
@@ -399,7 +430,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           Obx(
             () => Text(
               DurationUtils.formatDuration(
-                plPlayerController.durationSeconds.value.inSeconds,
+                plPlayerController.duration.value.inSeconds,
               ),
               style: const TextStyle(
                 color: Color(0xFFD0D0D0),
@@ -455,7 +486,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                       value: type,
                       onTap: () => plPlayerController.setShader(type),
                       child: Text(
-                        type.title,
+                        type.label,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 13,
@@ -468,7 +499,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
               child: Text(
-                type.title,
+                type.label,
                 style: const TextStyle(color: Colors.white, fontSize: 13),
               ),
             ),
@@ -1015,15 +1046,12 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       if (plPlayerController.isLive) return;
 
       final int curSliderPosition =
-          plPlayerController.sliderPosition.value.inMilliseconds;
+          plPlayerController.sliderPosition.inMilliseconds;
       final int newPos =
           (curSliderPosition +
                   (plPlayerController.sliderScale * delta.dx / maxWidth)
                       .round())
-              .clamp(
-                0,
-                plPlayerController.duration.value.inMilliseconds,
-              );
+              .clamp(0, plPlayerController.duration.value.inMilliseconds);
       final Duration result = Duration(milliseconds: newPos);
       final height = maxHeight * 0.125;
       if (details.localFocalPoint.dy <= height &&
@@ -1132,11 +1160,11 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     if (plPlayerController.isSliderMoving.value) {
       if (plPlayerController.cancelSeek == true) {
         plPlayerController.onUpdatedSliderProgress(
-          plPlayerController.position.value,
+          plPlayerController.position,
         );
       } else {
         plPlayerController.seekTo(
-          plPlayerController.sliderPosition.value,
+          plPlayerController.sliderPosition,
           isSeek: false,
         );
       }
@@ -1307,15 +1335,12 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
       Offset delta = event.localPanDelta;
       final int curSliderPosition =
-          plPlayerController.sliderPosition.value.inMilliseconds;
+          plPlayerController.sliderPosition.inMilliseconds;
       final int newPos =
           (curSliderPosition +
                   (plPlayerController.sliderScale * delta.dx / maxWidth)
                       .round())
-              .clamp(
-                0,
-                plPlayerController.duration.value.inMilliseconds,
-              );
+              .clamp(0, plPlayerController.duration.value.inMilliseconds);
       final Duration result = Duration(milliseconds: newPos);
       if (plPlayerController.cancelSeek == true) {
         plPlayerController
@@ -1503,10 +1528,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                             () {
                               return Text(
                                 DurationUtils.formatDuration(
-                                  plPlayerController
-                                      .durationSeconds
-                                      .value
-                                      .inSeconds,
+                                  plPlayerController.duration.value.inSeconds,
                                 ),
                                 style: textStyle,
                               );
@@ -1753,7 +1775,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                         final int value =
                             plPlayerController.sliderPositionSeconds.value;
                         final int max =
-                            plPlayerController.durationSeconds.value.inSeconds;
+                            plPlayerController.duration.value.inSeconds;
                         final int buffer =
                             plPlayerController.bufferedSeconds.value;
                         return ProgressBar(
@@ -1898,7 +1920,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         Obx(() {
           if (plPlayerController.dataStatus.loading ||
               (plPlayerController.isBuffering.value &&
-                  plPlayerController.playerStatus.playing)) {
+                  plPlayerController.playerStatus.isPlaying)) {
             return Center(
               child: GestureDetector(
                 onTap: plPlayerController.refreshPlayer,
@@ -1922,8 +1944,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                       ),
                       if (plPlayerController.isBuffering.value)
                         Obx(() {
-                          if (plPlayerController.buffered.value ==
-                              Duration.zero) {
+                          if (plPlayerController.bufferedSeconds.value == 0) {
                             return const Text(
                               '加载中...',
                               style: TextStyle(
@@ -2087,8 +2108,8 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   }
 
   late final segment = Pair(
-    first: plPlayerController.position.value.inMilliseconds / 1000.0,
-    second: plPlayerController.position.value.inMilliseconds / 1000.0,
+    first: plPlayerController.position.inMilliseconds / 1000.0,
+    second: plPlayerController.position.inMilliseconds / 1000.0,
   );
 
   Future<void> screenshotWebp() async {
@@ -2102,14 +2123,14 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
     final ctr = plPlayerController;
     final theme = Theme.of(context);
-    final currentPos = ctr.position.value.inMilliseconds / 1000.0;
-    final duration = ctr.durationSeconds.value.inMilliseconds / 1000.0;
+    final currentPos = ctr.position.inMilliseconds / 1000.0;
+    final duration = ctr.duration.value.inMilliseconds / 1000.0;
     final model = PostSegmentModel(
       segment: segment,
       category: SegmentType.sponsor,
       actionType: ActionType.skip,
     );
-    final isPlay = ctr.playerStatus.playing;
+    final isPlay = ctr.playerStatus.isPlaying;
     if (isPlay) ctr.pause();
 
     WebpPreset preset = WebpPreset.def;
