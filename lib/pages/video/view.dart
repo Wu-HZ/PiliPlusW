@@ -384,7 +384,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     if (!videoDetailController.horizontalScreen) {
       AutoOrientation.portraitUpMode();
     }
-    shutdownTimerService.handleWaitingFinished();
+    shutdownTimerService.handleWaiting();
     // Skip player disposal if video is in a floating window
     final hasFloatingWindow =
         floatingWindowManager.hasWindowForVideo(videoDetailController.bvid);

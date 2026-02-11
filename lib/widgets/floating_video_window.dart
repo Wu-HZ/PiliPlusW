@@ -173,7 +173,7 @@ class _FloatingVideoWindowState extends State<FloatingVideoWindow> {
                           context,
                           MdiIcons.rewind10,
                           () => widget.playerController.seekTo(
-                            widget.playerController.position.value -
+                            widget.playerController.position -
                                 const Duration(seconds: 10),
                           ),
                         ),
@@ -194,7 +194,7 @@ class _FloatingVideoWindowState extends State<FloatingVideoWindow> {
                           context,
                           MdiIcons.fastForward10,
                           () => widget.playerController.seekTo(
-                            widget.playerController.position.value +
+                            widget.playerController.position +
                                 const Duration(seconds: 10),
                           ),
                         ),

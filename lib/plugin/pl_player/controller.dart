@@ -369,7 +369,7 @@ class PlPlayerController with BlockConfigMixin {
     final initialPosition = Offset(20.0, staggeredTop);
 
     // Save current position
-    final savedPosition = position.value;
+    final savedPosition = position;
 
     // Create the OverlayEntry
     late final OverlayEntry overlayEntry;
@@ -393,7 +393,7 @@ class PlPlayerController with BlockConfigMixin {
             epId: epId,
             cover: coverUrl,
             title: title,
-            progress: position.value.inMilliseconds,
+            progress: position.inMilliseconds,
           );
         },
         onClose: () {
@@ -1454,14 +1454,6 @@ class PlPlayerController with BlockConfigMixin {
       if (PlatformUtils.isDesktop) {
         setting.put(SettingBoxKey.desktopVolume, volume.toPrecision(3));
       }
-    });
-  }
-
-  void volumeUpdated() {
-    showVolumeStatus.value = true;
-    _timerForShowingVolume?.cancel();
-    _timerForShowingVolume = Timer(const Duration(seconds: 1), () {
-      showVolumeStatus.value = false;
     });
   }
 
