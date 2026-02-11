@@ -1,5 +1,6 @@
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
+import 'package:PiliPlus/services/floating_window_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:media_kit_video/media_kit_video.dart';
@@ -59,15 +60,13 @@ class FloatingVideoWindow extends StatefulWidget {
 
 class _FloatingVideoWindowState extends State<FloatingVideoWindow> {
   late Offset _position;
-  final RxBool _showControls = true.obs;
+  final RxBool _showControls = false.obs;
   bool _isHovering = false;
 
   @override
   void initState() {
     super.initState();
     _position = widget.initialPosition;
-    // Controls start hidden, show on hover
-    _showControls.value = false;
   }
 
   @override
@@ -94,133 +93,141 @@ class _FloatingVideoWindowState extends State<FloatingVideoWindow> {
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.sizeOf(context);
 
-    return Positioned(
-      left: _position.dx,
-      top: _position.dy,
-      child: MouseRegion(
-        onEnter: _onEnter,
-        onExit: _onExit,
-        child: GestureDetector(
-          onPanUpdate: (details) {
-            setState(() {
-              _position = Offset(
-                (_position.dx + details.delta.dx).clamp(
-                  0.0,
-                  screenSize.width - widget.floatingWidth,
-                ),
-                (_position.dy + details.delta.dy).clamp(
-                  0.0,
-                  screenSize.height - widget.floatingHeight,
-                ),
-              );
-            });
-            if (!_showControls.value) {
-              _showControls.value = true;
-            }
-          },
-          onPanEnd: (_) {
-            widget.onPositionChanged?.call(_position);
-            if (!_isHovering) {
-              _showControls.value = false;
-            }
-          },
-          onTap: _handleTap,
-          child: Material(
-            elevation: 8,
-            borderRadius: BorderRadius.circular(8),
-            clipBehavior: Clip.antiAlias,
-            child: SizedBox(
-              width: widget.floatingWidth,
-              height: widget.floatingHeight,
-              child: Stack(
-                children: [
-                  // Video layer
-                  Positioned.fill(
-                    child: widget.playerController.videoController != null
-                        ? Video(
-                            controller:
-                                widget.playerController.videoController!,
-                            controls: NoVideoControls,
-                            pauseUponEnteringBackgroundMode: !widget
-                                .playerController
-                                .continuePlayInBackground
-                                .value,
-                            resumeUponEnteringForegroundMode: true,
-                            subtitleViewConfiguration:
-                                widget.playerController.subtitleConfig.value,
-                            fit: BoxFit.contain,
-                          )
-                        : const ColoredBox(
-                            color: Colors.black,
-                            child: Center(
-                              child: Icon(Icons.video_library,
-                                  color: Colors.white54),
-                            ),
-                          ),
-                  ),
-                  // Controls overlay
-                  Positioned.fill(
-                    child: Obx(
-                      () => AnimatedOpacity(
-                        opacity: _showControls.value ? 1.0 : 0.0,
-                        duration: const Duration(milliseconds: 200),
-                        child: IgnorePointer(
-                          ignoring: !_showControls.value,
-                          child: Container(
-                            color: Colors.black26,
-                            child: Stack(
-                              children: [
-                                // Center play/pause button
-                                if (!widget.isLive)
-                                  Center(
-                                    child: Obx(
-                                      () => IconButton(
-                                        onPressed: () => widget.playerController
-                                            .videoPlayerController
-                                            ?.playOrPause(),
-                                        icon: Icon(
-                                          widget.playerController.playerStatus
-                                                      .value ==
-                                                  PlayerStatus.playing
-                                              ? Icons.pause_circle_filled
-                                              : Icons.play_circle_filled,
-                                          color: Colors.white,
-                                          size: 48,
-                                        ),
-                                      ),
+    return Obx(
+      () => floatingWindowManager.isHidden.value
+          ? const SizedBox.shrink()
+          : Positioned(
+              left: _position.dx,
+              top: _position.dy,
+              child: MouseRegion(
+                onEnter: _onEnter,
+                onExit: _onExit,
+                child: GestureDetector(
+                  onPanUpdate: (details) {
+                    setState(() {
+                      _position = Offset(
+                        (_position.dx + details.delta.dx).clamp(
+                          0.0,
+                          screenSize.width - widget.floatingWidth,
+                        ),
+                        (_position.dy + details.delta.dy).clamp(
+                          0.0,
+                          screenSize.height - widget.floatingHeight,
+                        ),
+                      );
+                    });
+                    if (!_showControls.value) {
+                      _showControls.value = true;
+                    }
+                  },
+                  onPanEnd: (_) {
+                    widget.onPositionChanged?.call(_position);
+                    if (!_isHovering) {
+                      _showControls.value = false;
+                    }
+                  },
+                  onTap: _handleTap,
+                  child: Material(
+                    elevation: 8,
+                    borderRadius: BorderRadius.circular(8),
+                    clipBehavior: Clip.antiAlias,
+                    child: SizedBox(
+                      width: widget.floatingWidth,
+                      height: widget.floatingHeight,
+                      child: Stack(
+                        children: [
+                          // Video layer
+                          Positioned.fill(
+                            child: widget.playerController.videoController !=
+                                    null
+                                ? Video(
+                                    controller: widget
+                                        .playerController.videoController!,
+                                    controls: NoVideoControls,
+                                    pauseUponEnteringBackgroundMode: !widget
+                                        .playerController
+                                        .continuePlayInBackground
+                                        .value,
+                                    resumeUponEnteringForegroundMode: true,
+                                    subtitleViewConfiguration: widget
+                                        .playerController.subtitleConfig.value,
+                                    fit: BoxFit.contain,
+                                  )
+                                : const ColoredBox(
+                                    color: Colors.black,
+                                    child: Center(
+                                      child: Icon(Icons.video_library,
+                                          color: Colors.white54),
                                     ),
                                   ),
-                                // Close button (top-right)
-                                Positioned(
-                                  top: 4,
-                                  right: 4,
-                                  child: IconButton(
-                                    onPressed: widget.onClose,
-                                    icon: const Icon(
-                                      Icons.close,
-                                      color: Colors.white,
-                                      size: 20,
-                                    ),
-                                    style: IconButton.styleFrom(
-                                      backgroundColor: Colors.black45,
-                                      padding: const EdgeInsets.all(4),
-                                      minimumSize: const Size(28, 28),
+                          ),
+                          // Controls overlay
+                          Positioned.fill(
+                            child: Obx(
+                              () => AnimatedOpacity(
+                                opacity: _showControls.value ? 1.0 : 0.0,
+                                duration: const Duration(milliseconds: 200),
+                                child: IgnorePointer(
+                                  ignoring: !_showControls.value,
+                                  child: Container(
+                                    color: Colors.black26,
+                                    child: Stack(
+                                      children: [
+                                        // Center play/pause button
+                                        if (!widget.isLive)
+                                          Center(
+                                            child: Obx(
+                                              () => IconButton(
+                                                onPressed: () => widget
+                                                    .playerController
+                                                    .videoPlayerController
+                                                    ?.playOrPause(),
+                                                icon: Icon(
+                                                  widget
+                                                              .playerController
+                                                              .playerStatus
+                                                              .value ==
+                                                          PlayerStatus.playing
+                                                      ? Icons.pause_circle_filled
+                                                      : Icons.play_circle_filled,
+                                                  color: Colors.white,
+                                                  size: 48,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        // Close button (top-right)
+                                        Positioned(
+                                          top: 4,
+                                          right: 4,
+                                          child: IconButton(
+                                            onPressed: widget.onClose,
+                                            icon: const Icon(
+                                              Icons.close,
+                                              color: Colors.white,
+                                              size: 20,
+                                            ),
+                                            style: IconButton.styleFrom(
+                                              backgroundColor: Colors.black45,
+                                              padding: const EdgeInsets.all(4),
+                                              minimumSize: const Size(28, 28),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
-                              ],
+                              ),
                             ),
                           ),
-                        ),
+                        ],
                       ),
                     ),
                   ),
-                ],
+                ),
               ),
             ),
-          ),
-        ),
-      ),
     );
   }
 }

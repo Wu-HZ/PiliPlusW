@@ -1,6 +1,7 @@
 import 'package:PiliPlus/models/common/video/video_type.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 /// State for a single floating window
 class FloatingWindowState {
@@ -58,6 +59,9 @@ class FloatingWindowManager {
 
   /// Window ID that currently has audio focus
   String? _audioFocusWindowId;
+
+  /// Whether floating windows should be hidden (e.g., during fullscreen)
+  final RxBool isHidden = false.obs;
 
   /// Generate unique window ID
   String generateWindowId() =>

@@ -1622,6 +1622,8 @@ class PlPlayerController with BlockConfigMixin {
 
   void toggleFullScreen(bool val) {
     isFullScreen.value = val;
+    // Hide floating windows when entering fullscreen, show when exiting
+    floatingWindowManager.isHidden.value = val;
     updateSubtitleStyle();
   }
 
